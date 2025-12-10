@@ -482,7 +482,69 @@ docker build -t yt-agentic-rag .
 docker run -p 8080:8080 --env-file .env yt-agentic-rag
 ```
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for Google Cloud Run deployment.
+---
+
+## ☁️ Google Cloud Run Deployment
+
+### 1. Deploy the Container
+
+Deploy your Docker image to Cloud Run via the console or CLI.
+
+### 2. Set Up Service Account Secret
+
+The Google Calendar/Gmail tools require a service account JSON file. Since you can't commit credentials to git, use **Secret Manager**:
+
+```bash
+# Create the secret from your local service account file
+gcloud secrets create service_account \
+  --data-file=credentials/service_account.json \
+  --project=YOUR_PROJECT_ID
+
+# Grant Cloud Run access to the secret
+gcloud secrets add-iam-policy-binding service_account \
+  --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor" \
+  --project=YOUR_PROJECT_ID
+```
+
+> 💡 Find your project number in Cloud Console → IAM & Admin → Settings
+
+### 3. Mount Secret as Volume in Cloud Run
+
+**Important**: The service account JSON must be mounted as a **file**, not an environment variable.
+
+#### Step A: Create Volume (Volumes Tab)
+1. Go to Cloud Run → Your Service → **Edit & Deploy New Revision**
+2. Go to **Volumes** tab → **Add Volume**
+3. Configure:
+   - **Volume type**: Secret
+   - **Volume name**: `secret-1`
+   - **Secret**: `service_account`
+   - **Path 1**: `service_account.json` *(just the filename, not full path!)*
+   - **Version**: `latest`
+4. Click **Done**
+
+#### Step B: Mount Volume (Containers Tab)
+1. Go to **Containers** tab → Click on your container
+2. Scroll to **Volume Mounts** → **Add Volume Mount**
+3. Configure:
+   - **Volume**: `secret-1`
+   - **Mount path**: `/app/credentials`
+4. Click **Done** → **Deploy**
+
+This makes the secret available at `/app/credentials/service_account.json` which is exactly what the code expects.
+
+### 4. Set Environment Variables
+
+In Cloud Run, add these environment variables:
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `OPENAI_API_KEY`
+- `GOOGLE_CALENDAR_EMAIL` (your workspace email)
+- `GOOGLE_SERVICE_ACCOUNT_PATH=credentials/service_account.json`
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for more deployment options.
 
 ---
 
