@@ -76,13 +76,13 @@ Este proyecto implementa una arquitectura completa de agente autónomo que demue
 
 #### Arquitectura de Componentes Principales
 
-![Arquitectura de Componentes](docs/diagrams/arquitectura_componentes.svg)
+![Arquitectura de Componentes](Docs/diagrams/arquitectura_componentes.svg)
 
 Este diagrama muestra la arquitectura completa del sistema, desde el frontend hasta los servicios externos, pasando por el orquestador multi-agente y la capa MCP.
 
 #### Flujo LangGraph (Sistema Multi-Agente)
 
-![Flujo LangGraph](docs/diagrams/langgraph_flow.svg)
+![Flujo LangGraph](Docs/diagrams/langgraph_flow.svg)
 
 El grafo de LangGraph implementa el patrón orquestador con los siguientes nodos:
 - **ENTRY**: Punto de entrada con `user_query`
@@ -98,7 +98,7 @@ El grafo de LangGraph implementa el patrón orquestador con los siguientes nodos
 
 #### Flujo Completo de Voz
 
-![Flujo de Voz](docs/diagrams/flujo_voz_completo.svg)
+![Flujo de Voz](Docs/diagrams/flujo_voz_completo.svg)
 
 Este diagrama detalla el flujo completo desde que el usuario habla hasta que recibe la respuesta por voz:
 1. **VAD**: Detección automática de voz
@@ -112,7 +112,7 @@ Este diagrama detalla el flujo completo desde que el usuario habla hasta que rec
 
 #### Sistema Multi-Agente con MCP
 
-![Sistema Multi-Agente MCP](docs/diagrams/sistema_multiagente_mcp.svg)
+![Sistema Multi-Agente MCP](Docs/diagrams/sistema_multiagente_mcp.svg)
 
 Muestra cómo el orquestador coordina agentes especializados y cómo cada uno se comunica con servidores MCP:
 - **Orchestrator Agent (ORCH)**: Coordinador principal
@@ -120,7 +120,7 @@ Muestra cómo el orquestador coordina agentes especializados y cómo cada uno se
 - **MCP Layer**: Protocolo estándar con múltiples transportes
 - **Tool Registry**: Sistema centralizado de herramientas
 
-> **📊 Nota**: Todos los diagramas SVG están disponibles en [`docs/diagrams/`](docs/diagrams/). Puedes visualizarlos directamente en el navegador o incluirlos en presentaciones.
+> **📊 Nota**: Todos los diagramas SVG están disponibles en [`Docs/diagrams/`](Docs/diagrams/). Puedes visualizarlos directamente en el navegador o incluirlos en presentaciones.
 
 ### Componentes Principales
 
@@ -563,7 +563,7 @@ python scripts/test_mcp_protocol.py --mode all
 
 **MCP Inspector**: Compatible con herramientas de depuración MCP estándar para inspeccionar servidores, tools, y resources.
 
-> **📊 Diagramas**: Todos los diagramas SVG están disponibles en [`docs/diagrams/`](docs/diagrams/). Puedes visualizarlos directamente en el navegador o incluirlos en presentaciones.
+> **📊 Diagramas**: Todos los diagramas SVG están disponibles en [`Docs/diagrams/`](Docs/diagrams/). Puedes visualizarlos directamente en el navegador o incluirlos en presentaciones.
 
 ---
 
