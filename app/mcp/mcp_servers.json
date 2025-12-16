@@ -1,0 +1,79 @@
+{
+  "mcpServers": {
+    "mock": {
+      "transport": "mock",
+      "tools": [
+        "calendar.list_events",
+        "calendar.create_event",
+        "email.search",
+        "email.send"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem"],
+      "env": {}
+    },
+    "google-calendar": {
+      "command": "node",
+      "args": ["./servers/google-calendar-mcp.js"],
+      "env": {
+        "GOOGLE_OAUTH_CLIENT_PATH": "${GOOGLE_OAUTH_CLIENT_PATH}",
+        "GOOGLE_OAUTH_TOKEN_PATH": "${GOOGLE_OAUTH_TOKEN_PATH}",
+        "GOOGLE_CALENDAR_EMAIL": "${GOOGLE_CALENDAR_EMAIL}",
+        "GOOGLE_CALENDAR_ID": "${GOOGLE_CALENDAR_ID}"
+      }
+    },
+    "gmail": {
+      "command": "node",
+      "args": ["./servers/gmail-mcp.js"],
+      "env": {
+        "GOOGLE_OAUTH_CLIENT_PATH": "${GOOGLE_OAUTH_CLIENT_PATH}",
+        "GOOGLE_OAUTH_TOKEN_PATH": "${GOOGLE_OAUTH_TOKEN_PATH}",
+        "GMAIL_ACCOUNT": "${GOOGLE_CALENDAR_EMAIL}"
+      }
+    },
+    "calendly": {
+      "command": "node",
+      "args": ["./servers/calendly-mcp.js"],
+      "env": {
+        "CALENDLY_API_KEY": "${CALENDLY_API_KEY}"
+      }
+    },
+    "whatsapp": {
+      "command": "node",
+      "args": ["./servers/whatsapp-mcp.js"],
+      "env": {
+        "TWILIO_ACCOUNT_SID": "${TWILIO_ACCOUNT_SID}",
+        "TWILIO_AUTH_TOKEN": "${TWILIO_AUTH_TOKEN}",
+        "TWILIO_WHATSAPP_FROM": "${TWILIO_WHATSAPP_FROM}"
+      }
+    },
+    "imap": {
+      "transport": "http",
+      "base_url": "http://localhost:8000/mcp/imap",
+      "env": {
+        "IMAP_HOST": "${IMAP_HOST}",
+        "IMAP_PORT": "${IMAP_PORT}",
+        "IMAP_USER": "${IMAP_USER}",
+        "IMAP_PASS": "${IMAP_PASS}",
+        "IMAP_USE_SSL": "${IMAP_USE_SSL}"
+      }
+    },
+    "google-drive": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-google-drive"],
+      "env": {}
+    },
+    "test-server": {
+      "command": "python",
+      "args": ["./app/mcp/servers/test_mcp_server.py"],
+      "env": {}
+    },
+    "test-server-http": {
+      "transport": "http",
+      "base_url": "http://localhost:8001",
+      "env": {}
+    }
+  }
+}

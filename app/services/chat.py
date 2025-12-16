@@ -10,6 +10,7 @@ import logging
 from typing import List, Dict, Any
 import openai
 import anthropic
+import httpx
 from ..config.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -26,13 +27,20 @@ class ChatService:
         if self.provider == "openai":
             self.client = openai.OpenAI(api_key=settings.openai_api_key)
             self.model = settings.openai_chat_model
+            logger.info(f"Initialized chat service with openai ({self.model})")
         elif self.provider == "anthropic":
             self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
             self.model = settings.anthropic_chat_model
+            logger.info(f"Initialized chat service with anthropic ({self.model})")
+        elif self.provider == "nebius":
+            # Nebius vía HTTP (OpenAI-like payload)
+            self.client = None
+            self.model = settings.nebius_chat_model
+            self.base_url = settings.nebius_base_url.rstrip("/")
+            self.api_key = settings.nebius_api_key
+            logger.info(f"Initialized chat service with nebius ({self.model})")
         else:
             raise ValueError(f"Unsupported AI provider: {self.provider}")
-        
-        logger.info(f"Initialized chat service with {self.provider} ({self.model})")
     
     async def generate_answer(self, query: str, context_blocks: List[Dict[str, Any]]) -> str:
         """
@@ -83,7 +91,7 @@ class ChatService:
                     max_tokens=1000
                 )
                 answer = response.choices[0].message.content
-                
+
             elif self.provider == "anthropic":
                 response = self.client.messages.create(
                     model=self.model,
@@ -93,10 +101,39 @@ class ChatService:
                     messages=[{"role": "user", "content": user_prompt}]
                 )
                 answer = response.content[0].text
-            
+
+            elif self.provider == "nebius":
+                headers = {"Authorization": f"Bearer {self.api_key}"}
+                payload = {
+                    "model": self.model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "temperature": settings.temperature,
+                    "max_tokens": 1000,
+                }
+                # trust_env=False para evitar que proxies del entorno alteren la URL (observamos 404 intermitentes)
+                async with httpx.AsyncClient(timeout=60, trust_env=False) as client:
+                    resp = await client.post(
+                        f"{self.base_url}/v1/chat/completions",
+                        json=payload,
+                        headers=headers,
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+                answer = (
+                    data.get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content", "")
+                )
+
+            else:
+                raise ValueError(f"Unsupported provider: {self.provider}")
+
             logger.info(f"Generated answer using {self.provider}")
             return answer or "I couldn't generate an answer."
-            
+
         except Exception as e:
             logger.error(f"Failed to generate answer: {e}")
             return f"I encountered an error while processing your question: {str(e)}"

@@ -24,6 +24,7 @@ from fastapi.responses import FileResponse, Response, JSONResponse
 
 from .config.settings import get_settings
 from .config.database import db
+from .core.container import get_container
 from .schemas.requests import SeedRequest, AnswerRequest, AgentRequest
 from .schemas.responses import (
     SeedResponse, 
@@ -34,10 +35,10 @@ from .schemas.responses import (
     ToolCallInfo, 
     ToolResultInfo
 )
-from .services.rag import rag_service
-from .agents.orchestrator import agent_service
 from .data.default_documents import DEFAULT_DOCUMENTS
 from .schemas.tool_schemas import TOOL_DEFINITIONS
+from .api import api_router, ws_router, calendly_router, events_router, whatsapp_router, whatsapp_batch_router
+from .services.vibevoice_launcher import start_vibevoice, stop_vibevoice
 
 # Configure logging
 logging.basicConfig(
@@ -56,11 +57,52 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Agentic RAG API application")
     
     try:
+        # Initialize service container
+        container = get_container(settings)
+        app.state.container = container
+        logger.info("Service container initialized")
+        
         # Initialize database connection
         await db.connect()
         
         # Check database schema
         await db.initialize_schema()
+        
+        # Iniciar VibeVoice si está configurado
+        if settings.voice_tts_backend.lower() == "vibevoice":
+            logger.info("Iniciando VibeVoice automáticamente...")
+            vibevoice_port = 8001
+            if settings.vibevoice_base_url:
+                # Extraer puerto de la URL si está especificada
+                try:
+                    from urllib.parse import urlparse
+                    parsed = urlparse(settings.vibevoice_base_url)
+                    if parsed.port:
+                        vibevoice_port = parsed.port
+                except Exception:
+                    pass
+            
+            # Determinar dispositivo (CPU por defecto si no hay GPU)
+            device = "cpu"  # Por defecto CPU, se puede mejorar detectando GPU
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    device = "cuda"
+                elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+                    device = "mps"
+            except ImportError:
+                pass
+            
+            success = start_vibevoice(
+                model_path=None,  # Usar modelo por defecto de HuggingFace
+                port=vibevoice_port,
+                device=device
+            )
+            
+            if success:
+                logger.info(f"✅ VibeVoice iniciado en puerto {vibevoice_port}")
+            else:
+                logger.warning("⚠️ No se pudo iniciar VibeVoice. El TTS usará fallback.")
         
         logger.info("Application startup completed successfully")
         
@@ -72,6 +114,21 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down Agentic RAG API application")
+    
+    # Detener VibeVoice si está corriendo
+    if settings.voice_tts_backend.lower() == "vibevoice":
+        logger.info("Deteniendo VibeVoice...")
+        stop_vibevoice()
+    
+    # Limpiar clientes MCP
+    try:
+        container = getattr(app.state, "container", None)
+        if container:
+            await container.mcp_manager.cleanup_all()
+            logger.info("MCP clients cleaned up")
+    except Exception as e:
+        logger.warning(f"Error cleaning up MCP clients: {e}")
+    
     await db.disconnect()
 
 
@@ -117,6 +174,14 @@ app.add_middleware(
 
 # Mount static files for the chat interface
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# API/WS routers (nuevos endpoints)
+app.include_router(api_router)
+app.include_router(ws_router)
+app.include_router(calendly_router)
+app.include_router(events_router)
+app.include_router(whatsapp_router)
+app.include_router(whatsapp_batch_router)
 
 
 # ============================================================================
@@ -241,7 +306,8 @@ async def seed_documents(request: SeedRequest = SeedRequest()):
             ]
         
         # Process documents through RAG pipeline
-        inserted_count = await rag_service.seed_documents(documents)
+        container = get_container()
+        inserted_count = await container.rag_service.seed_documents(documents)
         
         logger.info(f"Seeding completed: {inserted_count} chunks inserted")
         
@@ -282,7 +348,9 @@ async def answer_question(request: AnswerRequest):
     try:
         logger.info(f"Processing RAG query: '{request.query[:100]}...'")
         
-        result = await rag_service.answer_query(
+        # Obtener container desde app.state o crear uno nuevo
+        container = getattr(request.app.state, "container", None) or get_container()
+        result = await container.rag_service.answer_query(
             query=request.query,
             top_k=request.top_k
         )
@@ -370,7 +438,9 @@ async def agent_query(request: AgentRequest):
                 for msg in request.chat_history
             ]
         
-        result = await agent_service.process_query(
+        # Obtener container desde app.state o crear uno nuevo
+        container = getattr(request.app.state, "container", None) or get_container()
+        result = await container.agent_service.process_query(
             query=request.query,
             chat_history=chat_history,
             user_id=request.user_id,

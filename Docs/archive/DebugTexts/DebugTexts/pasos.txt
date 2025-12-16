@@ -1,0 +1,27 @@
+1) MCP configs y clientes (Calendar, IMAP/SMTP, Calendly, WhatsApp)
+Crear plantillas JSON de servers en app/mcp/ (o .env apuntando a rutas):
+google_calendar: list/create/update/delete.
+imap_smtp (Thunderbird): search/read + send.
+calendly: availability/list (la creación seguirá vía scheduling_url + webhook ingest).
+whatsapp (Twilio HTTP): send/read.
+Añadir clientes/adaptadores en app/mcp/clients/*.py y mapear en tool_exec para que, si USE_MOCK_MCP=false, use MCP en lugar de las tools locales (mantener fallback local).
+Esto encaja con la práctica del curso de crear/usar servers MCP y con “programar cliente MCP en Python” del PDF.
+2) Comms WhatsApp
+Implementar send_whatsapp y read_whatsapp_recent como tools MCP/HTTP (Twilio); si no hay credenciales, dejar stub + interfaz y ejemplo de payload. Así se puede probar el flujo de comunicación asíncrona como en los ejercicios de MCP.
+3) Webhooks Calendly
+Probar POST /api/v1/calendly/webhook con ngrok + HMAC (ya implementado el endpoint).
+Registrar suscripción si no existe, para ingest automático; es consistente con la parte de integraciones y eventos en tiempo real.
+4) Tests smoke/E2E
+Texto→agenda list (atajo).
+Confirmación de evento (list_confirme/confirm branch).
+Email send (/api/v1/email/send).
+Calendly ingest (webhook o ingest tool).
+Conflicto/dedupe en extracted_events.
+Esto refuerza la práctica de herramientas y verificación que se menciona en el plan de curso.
+5) Observabilidad
+Métricas básicas: latencia de tool-call, ratio éxito/error, recuento de retries.
+Exportar trazas de LangGraph (debug.trace ya existe) a logs/metrics.
+Alineado con la parte de depuración/diagnóstico del curso.
+6) Ajustes al grafo (ya avanzados)
+Ya tenemos: intent → rag → conflict_check → policy → agent → plan → tool → response.
+Añadimos soporte a PersonalPreferenceAgent (placeholder) para poder incorporar preferencias/recursos más adelante (coincide con los ejercicios de resources del curso).

@@ -1,0 +1,25 @@
+{
+  "create_calendar_event": "google-calendar.create_event",
+  "update_calendar_event": "google-calendar.update_event",
+  "delete_calendar_event": "google-calendar.delete_event",
+  "list_calendar_events": "google-calendar.list_events",
+  "list_cal_events": "google-calendar.list_events",
+  "list_agenda_events": "google-calendar.list_events",
+  "get_busy_slots": "google-calendar.get_busy_slots",
+
+  "send_email": "gmail.send_email",
+  "read_email": "imap.read_email",
+  "search_emails": "imap.search_emails",
+  "draft_email": "gmail.draft_email",
+
+  "get_availability": "calendly.get_availability",
+  "create_meeting": "calendly.create_meeting",
+  "cancel_meeting": "calendly.cancel_meeting",
+
+  "send_whatsapp": "whatsapp.send_message",
+  "read_whatsapp": "whatsapp.read_recent_messages",
+  "send_voice_note": "whatsapp.send_voice_note"
+}
+
+
+

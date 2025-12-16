@@ -1,6 +1,7 @@
 # Python virtual environment
 venv/
 venv_yt_rag/
+.venv/
 __pycache__/
 *.pyc
 *.pyo
@@ -10,8 +11,12 @@ __pycache__/
 .env
 
 # Google API credentials (NEVER commit these!)
+credentials/
 credentials/*.json
 credentials/service_account.json
+
+# Cache / tooling
+.pytest_cache/
 
 # IDE specific files
 .idea/
@@ -23,6 +28,11 @@ credentials/service_account.json
 dist/
 build/
 *.egg-info/
+
+# Logs / local data
+*.log
+*.sqlite
+*.pem
 
 # Local development settings
 .DS_Store 

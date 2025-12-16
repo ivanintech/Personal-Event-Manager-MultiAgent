@@ -22,11 +22,20 @@ logger = logging.getLogger(__name__)
 class RAGService:
     """Main RAG service orchestrating the complete pipeline."""
     
-    def __init__(self):
-        """Initialize RAG service."""
+    def __init__(self, embedding_service=None, chat_service=None):
+        """
+        Initialize RAG service.
+        
+        Args:
+            embedding_service: Optional embedding service (for dependency injection)
+            chat_service: Optional chat service (for dependency injection)
+        """
         self.db = db
-        self.embedding_service = embedding_service
-        self.chat_service = chat_service
+        # Use injected services or fallback to global singletons for backward compatibility
+        from .embedding import embedding_service as default_embedding_service
+        from .chat import chat_service as default_chat_service
+        self.embedding_service = embedding_service if embedding_service is not None else default_embedding_service
+        self.chat_service = chat_service if chat_service is not None else default_chat_service
         self.chunker = chunker
     
     async def seed_documents(self, documents: List[Dict[str, str]] = None) -> int:
@@ -134,6 +143,27 @@ class RAGService:
                     'latency_ms': int((time.time() - start_time) * 1000)
                 }
             }
+
+    async def retrieve_context(self, query: str, top_k: int = 6) -> Dict[str, Any]:
+        """
+        Sólo retrieval (sin generación LLM): devuelve bloques y citas.
+        Se usa para enriquecer el grafo LangGraph sin costo extra de generación.
+        """
+        start_time = time.time()
+        try:
+            query_embedding = await self.embedding_service.embed_query(query)
+            search_results = await self.db.vector_search(query_embedding, top_k)
+            context_blocks = self._prepare_context(search_results) if search_results else []
+            citations = [block["chunk_id"] for block in context_blocks]
+            elapsed_ms = int((time.time() - start_time) * 1000)
+            return {
+                "contexts": context_blocks,
+                "citations": citations,
+                "latency_ms": elapsed_ms,
+            }
+        except Exception as e:
+            logger.error(f"Context retrieval failed: {e}")
+            return {"contexts": [], "citations": [], "latency_ms": int((time.time() - start_time) * 1000)}
     
     def _prepare_context(self, search_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """

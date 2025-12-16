@@ -62,9 +62,33 @@ class ToolRegistry:
         # Import tools lazily to avoid circular imports
         from .calendar_tool import calendar_tool
         from .email_tool import email_tool
+        from .agenda_tool import agenda_list_tool
+        from .confirm_event_tool import confirm_event_tool
+        from .list_cal_tool import list_cal_tool
+        from .calendly_list_tool import calendly_list_tool
+        from .calendly_ingest_tool import calendly_ingest_tool
+        from .calendly_create_tool import calendly_create_tool
+        from .whatsapp_tool import whatsapp_tool
+        from .imap_search_tool import imap_search_tool
+        from .imap_read_tool import imap_read_tool
+        from .url_extraction_tool import url_extraction_tool
+        from .web_scraping_tool import web_scraping_tool
+        from .news_scraping_tool import news_scraping_tool
         
         self.register(calendar_tool)
         self.register(email_tool)
+        self.register(agenda_list_tool)
+        self.register(confirm_event_tool)
+        self.register(list_cal_tool)
+        self.register(calendly_list_tool)
+        self.register(calendly_ingest_tool)
+        self.register(calendly_create_tool)
+        self.register(whatsapp_tool)
+        self.register(imap_search_tool)
+        self.register(imap_read_tool)
+        self.register(url_extraction_tool)
+        self.register(web_scraping_tool)
+        self.register(news_scraping_tool)
         
         logger.info(
             f"Registered {len(self._tools)} default tools: {list(self._tools.keys())}"

@@ -1,0 +1,80 @@
+$ cd "C:\Users\ivang\Documents\Projects\ML Projects\CursoAgentesIA\Proyecto\personal-coordination-voice-agent"; .\.venv\Scripts\activate; $resp = Invoke-RestMethod -Uri http://localhost:8000/api/v1/text -Method Post -ContentType "application/json" -Body '{"query":"Programa una reunión mañana a las 08:00"}'; $resp | ConvertTo-Json -Depth 10
+{
+    "text":  "Step 1: Determine the date for \"ma��ana\" (tomorrow). \n   Tomorrow is 2025-12-16.\n\n Step 2: The user specified 08:00 (8:00 AM). However, note the timezone context from RAG:\n   [scheduling_timezone_v1#1] says: \"Default timezone for all meetings is America/New_York (EST/EDT).\"\n\n But the user did not specify a timezone. Since the context says that meeting times are displayed in the user\u0027s local time when booking, but the system uses EST, we must be cautious.\n\n However, the instruction says: \"When scheduling, please confirm your timezone to avoid confusion.\" \n But the user hasn\u0027t provided their timezone. We have two options:\n\n Option 1: Assume the user is in the same timezone as the system (EST) and proceed.\n Option 2: Ask for clarification.\n\n Given that the user said \"ma��ana\" (which is in Spanish) and the time is 08:00, it\u0027s possible they are in a different timezone.\n\n But note: the tool requires the time in ISO format and we must specify the timezone.\n\n Since the policy states that the default timezone is America/New_York, and the meeting will be scheduled in that timezone, we must convert the user\u0027s time to EST if we know their timezone? \n\n However, we don\u0027t have the user\u0027s timezone. \n\n Let me reexamine the context: \n   \"All meeting times are displayed in your local timezone when booking through our system.\" \n   But we are not using a booking system, we are the assistant.\n\n Given the ambiguity, the safe approach is to ask the user for their timezone or confirm that 08:00 is in EST.\n\n But note: the user might have intended 08:00 in their local time. We don\u0027t have that information.\n\n Alternatively, we can schedule it as 08:00 EST and then let the user know the time in their timezone? But we don\u0027t have their timezone.\n\n Considering the instructions, we should ask for clarification to avoid scheduling at the wrong time.\n\n However, note that the user might be in the same timezone as the system (EST). But we cannot assume.\n\n Let me check: the current date is 2025-12-15, which is in December, so EST (not EDT). \n\n Since the user said \"ma��ana\", which is common in Spanish, and we don\u0027t have the user\u0027s timezone, we must ask.\n\n But wait: the user might be expecting the meeting at 8 AM their time. We don\u0027t know.\n\n How about we ask: \"��A quǸ zona horaria pertenece la hora que me indic�� (08:00)?\"\n\n However, to be efficient, we can also offer: \n   \"Por defecto, nuestras reuniones se programan en la zona horaria de Nueva York (EST). ��La hora que me indic�� (08:00) es en su hora local o en EST?\"\n\n But note: the user might not know what EST is.\n\n Alternatively, we can use the tool to schedule but we must have the time in EST. \n\n Since we don\u0027t have the user\u0027s timezone, we cannot convert. Therefore, we must ask.\n\n However, the tool requires the time in ISO format with timezone. We can only schedule in one timezone.\n\n Given the constraints, I will ask the user to confirm the timezone for the 08:00 time.\n\n But note: the user might be in a Spanish-speaking country, which could be in Europe or America. 8:00 AM in Spain is 2:00 AM EST, which is very early. In Mexico, it could be 7:00 AM, 8:00 AM, or 9:00 AM EST depending on the region.\n\n Therefore, I will ask:\n\n \"Para programar la reuni��n, necesito confirmar la zona horaria. ��La hora que me indic�� (08:00) es en su hora local? Si es as��, por favor indique su ciudad o zona horaria para que pueda convertirla a la hora de Nueva York (EST), que es la que utilizamos para las reuniones.\"\n\n Alternatively, we can ask: \"��En quǸ zona horaria se encuentra? O, ��podr��a confirmar si la hora que mencion�� es en la hora de Nueva York (EST)?\"\n\n However, to make it simple:\n\n \"Entendido. Para programar la reuni��n ma��ana a las 08:00, ��podr��a confirmar en quǸ zona horaria se refiere? Por ejemplo, si estǭ en Espa��a, ser��an las 8:00 AM hora local, que ser��a la 2:00 AM en Nueva York (EST). Nuestro horario de reuniones en EST es de 9 AM a 5 PM. ��Podr��a proporcionar su ubicaci��n o zona horaria para que podamos ajustar?\"\n\n But note: the user might not be available at 2 AM EST. So we must adjust.\n\n Alternatively, we can suggest a time in EST and ask if that works? But the user specifically said 8:00.\n\n Given the complexity, I will ask for the timezone.\n\n However, note that the RAG context says: \"For international clients, we offer early morning (7 AM EST) and late afternoon (6 PM EST) slots.\" So 8:00 AM EST is within our business hours.\n\n But if the user is in a different timezone, 8:00 AM their time might be outside our business hours in EST.\n\n Therefore, we must convert.\n\n Since we don\u0027t have the user\u0027s timezone, we cannot proceed without asking.\n\n Let\u0027s ask:\n\n \"Por favor, indique su zona horaria (por ejemplo, \u0027Europe/Madrid\u0027, \u0027America/Mexico_City\u0027) o ciudad para que pueda programar la reuni��n a las 08:00 en su hora local convertida a EST. TambiǸn, ��podr��a confirmar si la hora que mencion�� es en la hora de Nueva York (EST)?\"\n\n But to be more user-friendly:\n\n \"��Claro! Para asegurarme de que programo la reuni��n a la hora correcta, ��podr��a decirme en quǸ ciudad o zona horaria se encuentra? As�� podrǸ convertir las 8:00 de ma��ana (su hora) a la hora de Nueva York (EST), que es la que usamos para el calendario.\"\n\n However, note: the user might not know their timezone. We can also ask for the country and city.\n\n Alternatively, we can use the current time of the user? But we don\u0027t have that.\n\n Since we don\u0027t have the user\u0027s timezone, we must ask.\n\n Therefore, I will ask for the timezone.\n\n But note: the user might be in EST and then 8:00 EST is fine.\n\n How about we say:\n\n \"Nuestro sistema utiliza la zona horaria de Nueva York (EST). ��La hora que me indic�� (08:00)",
+    "tool_calls":  [
+
+                   ],
+    "tool_results":  [
+
+                     ],
+    "citations":  [
+                      "scheduling_timezone_v1#1"
+                  ],
+    "debug":  {
+                  "rag_context_used":  true,
+                  "rag_chunk_ids":  [
+                                        "scheduling_consultation_v1#1",
+                                        "scheduling_timezone_v1#1",
+                                        "scheduling_demo_v1#1",
+                                        "policy_shipping_v1#1"
+                                    ],
+                  "tools_called":  [
+
+                                   ],
+                  "iterations":  1,
+                  "latency_ms":  57339,
+                  "trace":  [
+                                {
+                                    "step":  "rag_context",
+                                    "chunks":  [
+                                                   "scheduling_consultation_v1#1",
+                                                   "scheduling_timezone_v1#1",
+                                                   "scheduling_demo_v1#1",
+                                                   "policy_shipping_v1#1"
+                                               ],
+                                    "count":  4
+                                },
+                                {
+                                    "step":  "build_messages",
+                                    "message_count":  2
+                                },
+                                {
+                                    "step":  "iteration_start",
+                                    "iteration":  1
+                                },
+                                {
+                                    "step":  "llm_response",
+                                    "iteration":  1,
+                                    "has_tool_calls":  false,
+                                    "content_preview":  "\u003cthink\u003e\nWe are given: \"Programa una reuni��n ma��ana a las 08:00\"\n Today is 2025-12-15.\n\n Step 1: Determine the date for \""
+                                },
+                                {
+                                    "step":  "final_response",
+                                    "iteration":  1,
+                                    "content_preview":  "\u003cthink\u003e\nWe are given: \"Programa una reuni��n ma��ana a las 08:00\"\n Today is 2025-12-15.\n\n Step 1: Determine the date for \"ma��ana\" (tomorrow). \n   Tomorrow is 2025-12-16.\n\n Step 2: The user specified 08:"
+                                }
+                            ]
+              }
+}
+$ cd "C:\Users\ivang\Documents\Projects\ML Projects\CursoAgentesIA\Proyecto\personal-coordination-voice-agent"; .\.venv\Scripts\activate; $body = '{"query":"Programa una consulta estándar de 30 minutos para mañana 16/12/2025 a las 08:00 America/New_York con asistentes usuario@example.com e info.ivancm@gmail.com"}'; Invoke-RestMethod -Uri http://localhost:8000/api/v1/text -Method Post -ContentType "application/json" -Body $body
+
+
+text         : He programado la consulta estǭndar de 30 minutos segǧn lo solicitado. Aqu�� estǭn los detalles:
+               
+               �??? **Evento creado:**  
+               - **T��tulo:** Standard Consultation Call  
+               - **Fecha:** 16 de diciembre de 2025  
+               - **Hora:** 8:00 AM - 8:30 AM (America/New_York)  
+               - **Enlace de la reuni��n:** 
+               [https://meet.google.com/svj-hyky-kxn](https://meet.google.com/svj-hyky-kxn)  
+               - **Asistentes:** usuario@example.com e info.ivancm@gmail.com  
+               
+               Se ha enviado una invitaci��n de calendario a todos los participantes. Recuerda que segǧn nuestra pol�-
+               tica [scheduling_consultation_v1#1], las cancelaciones deben realizarse con al menos 4 horas de 
+               anticipaci��n.
+tool_calls   : {@{tool_name=create_calendar_event; arguments=; call_id=chatcmpl-tool-db98ca45968743729aee9d832735f012}}
+tool_results : {@{call_id=chatcmpl-tool-db98ca45968743729aee9d832735f012; tool_name=create_calendar_event; 
+               success=True; result=; error=}}
+citations    : {scheduling_consultation_v1#1}
+debug        : @{rag_context_used=True; rag_chunk_ids=System.Object[]; tools_called=System.Object[]; iterations=2; 
+               latency_ms=45573; trace=System.Object[]}

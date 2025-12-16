@@ -65,44 +65,39 @@ class CalendarTool(BaseTool):
         if not self._initialized:
             try:
                 # Import here to avoid issues if google packages not installed
-                from google.oauth2 import service_account
+                from google.oauth2.credentials import Credentials
                 from googleapiclient.discovery import build
                 
                 # Import settings lazily to avoid circular imports
                 from ...config.settings import get_settings
                 settings = get_settings()
                 
-                # Load service account credentials
-                credentials = service_account.Credentials.from_service_account_file(
-                    settings.google_service_account_path,
+                # Load user OAuth credentials (token json generated previamente)
+                credentials = Credentials.from_authorized_user_file(
+                    settings.google_oauth_token_path,
                     scopes=['https://www.googleapis.com/auth/calendar']
-                )
-                
-                # Delegate to the corporate email for domain-wide delegation
-                delegated_credentials = credentials.with_subject(
-                    settings.google_calendar_email
                 )
                 
                 # Build the Calendar service
                 self._service = build(
                     'calendar', 
                     'v3', 
-                    credentials=delegated_credentials
+                    credentials=credentials
                 )
                 self._initialized = True
                 logger.info(
-                    f"Google Calendar service initialized for "
+                    f"Google Calendar service initialized (OAuth user) for "
                     f"{settings.google_calendar_email}"
                 )
                 
             except FileNotFoundError as e:
                 logger.error(
-                    f"Service account file not found: {e}. "
-                    "Please ensure credentials/service_account.json exists."
+                    f"OAuth token file not found: {e}. "
+                    "Please ensure google_oauth_token.json exists."
                 )
                 raise
             except Exception as e:
-                logger.error(f"Failed to initialize Google Calendar service: {e}")
+                logger.error(f"Failed to initialize Google Calendar service (OAuth): {e}")
                 raise
         
         return self._service

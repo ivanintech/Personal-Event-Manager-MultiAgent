@@ -33,3 +33,22 @@ google-auth-httplib2>=0.1.1
 # Utilities
 # =============================================================================
 rich>=13.0.0
+websockets>=12.0  # Para streaming WebSocket con VibeVoice
+
+# =============================================================================
+# Web Scraping (para Proyecto Final)
+# =============================================================================
+beautifulsoup4>=4.12.0  # Para parsing HTML
+httpx>=0.25.0  # Para requests HTTP asíncronos
+lxml>=4.9.0  # Parser HTML rápido (opcional pero recomendado)
+python-dateutil>=2.8.0  # Para parsing de fechas
+
+# =============================================================================
+# Audio Processing (para conversión WebM a WAV para STT)
+# =============================================================================
+pydub>=0.25.1  # Para conversión de formatos de audio (requiere ffmpeg instalado en el sistema)
+
+# =============================================================================
+# Twilio (para WhatsApp webhooks)
+# =============================================================================
+twilio>=8.10.0  # Para validación de webhooks de Twilio

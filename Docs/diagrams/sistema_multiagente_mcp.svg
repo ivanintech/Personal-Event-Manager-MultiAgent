@@ -1,0 +1,145 @@
+<svg width="1400" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="orchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9B59B6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6C3483;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="agentGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498DB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980B9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="mcpGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2ECC71;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#27AE60;stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <polygon points="0 0, 10 5, 0 10" fill="#2C3E50" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="700" y="30" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    Sistema Multi-Agente con MCP (Model Context Protocol)
+  </text>
+  
+  <!-- Orchestrator -->
+  <rect x="500" y="80" width="400" height="120" rx="10" fill="url(#orchGrad)" stroke="#2C3E50" stroke-width="3"/>
+  <text x="700" y="110" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">Orchestrator Agent (ORCH)</text>
+  <text x="700" y="135" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="white">Coordina y delega a agentes especializados</text>
+  <text x="700" y="155" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">• Analiza intención del usuario</text>
+  <text x="700" y="175" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">• Gestiona contexto RAG compartido</text>
+  <text x="700" y="190" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">• Humaniza respuestas finales</text>
+  
+  <!-- Specialized Agents -->
+  <rect x="100" y="250" width="220" height="140" rx="10" fill="url(#agentGrad)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="210" y="280" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Calendar Agent (CAL)</text>
+  <text x="210" y="305" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Tools:</text>
+  <text x="210" y="325" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• list_agenda_events</text>
+  <text x="210" y="340" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• create_calendar_event</text>
+  <text x="210" y="355" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• confirm_agenda_event</text>
+  <text x="210" y="370" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">MCP: google-calendar</text>
+  
+  <rect x="380" y="250" width="220" height="140" rx="10" fill="url(#agentGrad)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="490" y="280" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Email Agent (EMAIL)</text>
+  <text x="490" y="305" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Tools:</text>
+  <text x="490" y="325" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• search_emails</text>
+  <text x="490" y="340" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• read_email</text>
+  <text x="490" y="355" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• send_email</text>
+  <text x="490" y="370" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">MCP: imap</text>
+  
+  <rect x="660" y="250" width="220" height="140" rx="10" fill="url(#agentGrad)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="770" y="280" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">Scheduling Agent (SCHED)</text>
+  <text x="770" y="305" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Tools:</text>
+  <text x="770" y="325" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• create_calendly_event</text>
+  <text x="770" y="340" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• ingest_calendly_events</text>
+  <text x="770" y="355" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• list_calendly_events</text>
+  <text x="770" y="370" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">MCP: calendly</text>
+  
+  <rect x="940" y="250" width="220" height="140" rx="10" fill="url(#agentGrad)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="1050" y="280" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="white">WhatsApp Agent (WA)</text>
+  <text x="1050" y="305" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Tools:</text>
+  <text x="1050" y="325" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• send_whatsapp</text>
+  <text x="1050" y="340" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• get_conversation_history</text>
+  <text x="1050" y="355" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">• detect_events</text>
+  <text x="1050" y="370" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">MCP: whatsapp</text>
+  
+  <!-- MCP Layer -->
+  <rect x="50" y="450" width="1300" height="280" rx="10" fill="url(#mcpGrad)" stroke="#2C3E50" stroke-width="3" opacity="0.9"/>
+  <text x="700" y="480" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">
+    MCP (Model Context Protocol) - JSON-RPC 2.0
+  </text>
+  
+  <!-- Transportes -->
+  <rect x="100" y="510" width="200" height="180" rx="5" fill="white" opacity="0.9"/>
+  <text x="200" y="535" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2C3E50">Transportes</text>
+  <text x="200" y="560" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">stdio</text>
+  <text x="200" y="580" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">HTTP</text>
+  <text x="200" y="600" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">HTTP+SSE</text>
+  <text x="200" y="620" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">OAuth 2.0</text>
+  <text x="200" y="640" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">REST API</text>
+  <text x="200" y="660" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">WebSocket</text>
+  <text x="200" y="680" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">(Streaming)</text>
+  
+  <!-- Servidores MCP -->
+  <rect x="350" y="510" width="700" height="180" rx="5" fill="white" opacity="0.9"/>
+  <text x="700" y="535" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2C3E50">Servidores MCP Configurados</text>
+  
+  <rect x="380" y="560" width="140" height="50" rx="5" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+  <text x="450" y="580" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2C3E50">google-calendar</text>
+  <text x="450" y="600" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#555">HTTP + OAuth</text>
+  
+  <rect x="540" y="560" width="140" height="50" rx="5" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+  <text x="610" y="580" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2C3E50">imap</text>
+  <text x="610" y="600" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#555">stdio</text>
+  
+  <rect x="700" y="560" width="140" height="50" rx="5" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+  <text x="770" y="580" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2C3E50">calendly</text>
+  <text x="770" y="600" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#555">HTTP + OAuth</text>
+  
+  <rect x="860" y="560" width="140" height="50" rx="5" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+  <text x="930" y="580" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2C3E50">whatsapp</text>
+  <text x="930" y="600" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#555">HTTP + REST</text>
+  
+  <rect x="380" y="630" width="140" height="50" rx="5" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+  <text x="450" y="650" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2C3E50">filesystem</text>
+  <text x="450" y="670" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#555">stdio</text>
+  
+  <rect x="540" y="630" width="140" height="50" rx="5" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+  <text x="610" y="650" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2C3E50">google-drive</text>
+  <text x="610" y="670" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#555">HTTP + OAuth</text>
+  
+  <rect x="700" y="630" width="140" height="50" rx="5" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+  <text x="770" y="650" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2C3E50">mock</text>
+  <text x="770" y="670" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#555">Testing</text>
+  
+  <!-- Tool Registry -->
+  <rect x="1100" y="510" width="200" height="180" rx="5" fill="white" opacity="0.9"/>
+  <text x="1200" y="535" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2C3E50">Tool Registry</text>
+  <text x="1200" y="560" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">Sistema Centralizado</text>
+  <text x="1200" y="580" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">Mapeo Tools → MCP</text>
+  <text x="1200" y="600" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">Fallback Local</text>
+  <text x="1200" y="620" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">Function Calling</text>
+  <text x="1200" y="640" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">Schema Definitions</text>
+  <text x="1200" y="660" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">Tool Selection</text>
+  <text x="1200" y="680" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="#555">Logging</text>
+  
+  <!-- Arrows -->
+  <path d="M 600 200 L 210 250" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 650 200 L 490 250" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 700 200 L 770 250" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 800 200 L 1050 250" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 210 390 L 450 510" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 490 390 L 610 510" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 770 390 L 770 510" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 1050 390 L 930 510" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <path d="M 1100 600 L 1200 600" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Footer -->
+  <text x="700" y="770" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#7F8C8D">
+    Patrón Orquestador: Coordinación de agentes especializados vía MCP estándar
+  </text>
+</svg>
+
+

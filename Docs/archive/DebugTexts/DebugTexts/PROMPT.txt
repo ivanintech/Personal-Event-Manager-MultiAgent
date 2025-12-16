@@ -1,0 +1,410 @@
+Quiero que actúes como arquitecto de software y desarrollador senior de IA especializado en LangChain / LangGraph, RAG, agentes multi‑tool, MCP servers y voz en tiempo real. Tu tarea es diseñar y ayudarme a implementar un “Personal Coordination Voice Agent” con la arquitectura que describo a continuación.
+
+1. Contexto general del proyecto
+Objetivo: construir un agente personal conversacional por voz, capaz de:
+
+Leer y razonar sobre emails, calendarios, citas y recordatorios.
+
+Actuar sobre estos sistemas: crear/modificar eventos, enviar correos, responder a contactos, bloquear huecos de agenda, etc.
+
+Todo ello de forma conversacional, multi‑turno, con voz (STT/TTS) y RAG sobre historial y documentos.
+
+El agente funcionará como un “coordinador personal” de:
+
+Google Calendar
+
+Calendly
+
+WhatsApp (para coordinar por chat o notas de voz)
+
+Thunderbird / email (IMAP + CalDAV o similar)
+
+La interacción principal será:
+
+Usuario habla → agente escucha → agente razona (RAG + tools/MCP) → agente responde en voz y ejecuta acciones.
+
+2. Código base ya disponible
+Tengo ya clonado localmente el Top Pick que elegimos previamente (el repositorio más cercano a un voice + MCP agent).
+
+IMPORTANTE: Debes detectar y asumir que este repo base:
+
+Ya implementa al menos:
+
+STT (Whisper o similar).
+
+TTS (ElevenLabs y/o un TTS open-source).
+
+Conversational loop básico (texto).
+
+Soporte para MCP servers genéricos (por ejemplo mediante un archivo de configuración tipo mcp_servers.json o similar).
+
+Además, tengo una carpeta local llamada OtherProjects/ donde he descargado varios proyectos similares (ejemplos de referencia), que puedes asumir que incluyen:
+
+Ejemplos de:
+
+LangGraph + RAG agents.
+
+Voice agents con WebRTC o websockets.
+
+Integración con Google Calendar, Gmail, WhatsApp, etc.
+
+Implementaciones de MCP servers específicos.
+
+Tu trabajo consistirá en aprovechar patrones y código conceptual de esos proyectos (sin copiar literal), y proponer cómo integrarlos o adaptarlos en el código base del Top Pick.
+
+3. Stack técnico deseado
+Quiero que diseñes y ayudes a implementar la arquitectura con estas tecnologías:
+
+Backend principal:
+
+Python
+
+LangChain + LangGraph para la orquestación de agentes https://docs.tokenfactory.nebius.com/quickstart y el grafo conversacional.
+
+RAG sobre:
+
+Emails históricos.
+
+Eventos de calendario.
+
+Notas personales o documentos relevantes.
+
+Políticas y preferencias del usuario.
+
+Vector DB: idealmente Supabase (pgvector) o similar (puedes proponer otra si encaja mejor).
+
+Interfaces / serving:
+
+Flask como capa de serving principal:
+
+Endpoint(s) HTTP/WS para voz.
+
+Endpoint(s) HTTP para debug (por ejemplo, ver estado de la conversación).
+
+Voz:
+
+STT: Whisper (Groq u otro provider rápido).
+
+TTS: ElevenLabs o VibeVoice (streaming preferible).
+
+Herramientas externas vía MCP servers:
+
+MCP server para Google Calendar (leer, crear, modificar, cancelar eventos).
+
+MCP server para Gmail o Thunderbird (IMAP + envío).
+
+MCP server para Calendly (consultar disponibilidades, crear reuniones).
+
+MCP server para WhatsApp (vía Twilio u otra API).
+
+Idealmente, MCP servers HTTP/SSE o stdio, según soporte del Top Pick.
+
+Persistencia:
+
+DB relacional (PostgreSQL o Supabase):
+
+Tabla de usuarios.
+
+Tabla de sesiones conversacionales.
+
+Tabla de mensajes.
+
+Tabla de “memorias” o hechos del usuario.
+
+Vector store para embeddings (pgvector, Qdrant o similar).
+
+4. Arquitectura funcional deseada
+Quiero que me ayudes a construir, paso a paso, un sistema con esta arquitectura lógica:
+
+Frontend (no hace falta implementarlo por completo, pero sí definir la contract API):
+
+Cliente web que:
+
+Captura audio del micro.
+
+Envía audio al backend Flask (idealmente vía WebSocket o HTTP chunked).
+
+Recibe audio de respuesta del agente y lo reproduce.
+
+Flask backend (capa de transporte):
+
+Endpoint WebSocket (o HTTP streaming) que:
+
+Recibe chunks de audio de entrada.
+
+Los pasa al módulo de STT.
+
+Envía al cliente los chunks de audio TTS de respuesta.
+
+Maneja:
+
+Autenticación básica (puede ser un simple token/API key).
+
+Session IDs por usuario.
+
+Módulo de STT/TTS:
+
+Implementar una interfaz clara:
+
+transcribe_stream(audio_stream) -> text (para STT).
+
+synthesize_stream(text) -> audio_stream (para TTS).
+
+Adaptar lo que ya tenga el Top Pick para ajustarlo a esa interfaz.
+
+LangGraph + Agentic RAG:
+
+Definir un grafo de agentes con nodos del estilo:
+
+intent_router: decide si la petición va de:
+
+Gestión de calendario
+
+Gestión de emails
+
+Notas / to‑dos
+
+Preguntas generales
+
+rag_retriever: realiza búsquedas en el vector store:
+
+Sobre emails indexados.
+
+Sobre eventos de calendario y notas.
+
+Sobre políticas y preferencias del usuario.
+
+tool_executor: decide qué MCP server/tool ejecutar.
+
+Tool para Google Calendar (list/create/update/delete).
+
+Tool para Gmail/Thunderbird.
+
+Tool para Calendly.
+
+Tool para WhatsApp.
+
+policy_checker: aplica reglas como:
+
+“No agendar nada fuera de 9-19h salvo si el usuario explícitamente lo pide”.
+
+“Si hay conflicto de eventos, preguntar antes de reprogramar”.
+
+response_generator: genera la respuesta final al usuario, combinando:
+
+Información RAG.
+
+Resultado de tools/MCP.
+
+Estilo conversacional.
+
+Debe soportar multi‑turno, memoria de conversación y estado por usuario.
+
+RAG / Vector store:
+
+Módulo para:
+
+Indexar emails, eventos y notas en la base vectorial.
+
+Actualizar el índice periódicamente o bajo demanda.
+
+Interfaz clara:
+
+index_email(email_obj), index_event(event_obj), etc.
+
+search_context(query, top_k) -> list[chunks].
+
+MCP integration:
+
+Partiendo de la infraestructura MCP que ya tenga el Top Pick, definir:
+
+Ficheros de configuración de MCP servers (por ejemplo, JSON con endpoints, auth, etc.).
+
+Código adaptador que convierta:
+
+Llamadas del agente (LangChain/LangGraph) → llamadas MCP.
+
+Respuestas MCP → observaciones del agente.
+
+Para cada dominio:
+
+Google Calendar MCP:
+
+Tools: list_events, create_event, update_event, delete_event, get_busy_slots.
+
+Gmail/Thunderbird MCP:
+
+Tools: search_emails, read_email, send_email, draft_email.
+
+Calendly MCP:
+
+Tools: get_availability, create_meeting, cancel_meeting.
+
+WhatsApp MCP:
+
+Tools: send_message, read_recent_messages, send_voice_note (si aplica).
+
+Debes proponer una buena estructura de carpetas para estos MCP servers.
+
+5. Uso de la carpeta OtherProjects/
+En la carpeta OtherProjects/ tengo descargados:
+
+Repos de LangGraph + RAG + FastAPI.
+
+Repos de voice agents (LiveKit, etc.).
+
+Repos con MCP servers para Google Calendar / Gmail / otros.
+
+Quiero que:
+
+Revises conceptualmente cómo se estructuran esos proyectos (su arquitectura, módulos, patrones).
+
+Me propongas:
+
+Qué partes podemos reutilizar como referencia conceptual (nombres de módulos, patrones de diseño, estructuras).
+
+Qué partes conviene adaptar al código base del Top Pick.
+
+Pero: no quiero copia/pega ciego; quiero que me des una arquitectura limpia y coherente en este nuevo proyecto.
+
+6. Estilo de trabajo que quiero de ti
+Quiero que trabajes en iteraciones pequeñas y claras:
+
+Primero: propón un diagrama de arquitectura lógico (en texto) con módulos, carpetas y responsabilidades.
+
+Después: propone una estructura de carpetas / paquetes concreta para el proyecto.
+
+Luego: define interfaces y tipos clave (por ejemplo, clases/funciones para:
+
+VoiceIO
+
+AgentOrchestrator
+
+RAGRetriever
+
+MCPToolClient
+
+A continuación: genera el código base mínimo funcional:
+
+Un endpoint Flask que:
+
+Reciba texto (puede ser primero sin audio).
+
+Pase por LangGraph agent.
+
+Llame a un MCP ficticio (mock).
+
+Devuelva texto.
+
+Más adelante:
+
+Integrar STT/TTS.
+
+Integrar MCP reales.
+
+Integrar RAG real con vector DB.
+
+En cada paso:
+
+Explica por qué eliges una decisión arquitectónica (por ejemplo por separar concerns, facilitar test, etc.).
+
+Da ejemplos de código concretos y listos para pegar en archivos (app.py, agents/graph.py, mcp/clients/google_calendar.py, etc.).
+
+Indica cuándo deberíamos mirar un proyecto de OtherProjects/ como inspiración (por ejemplo: “para esta parte, mira cómo lo hace el repo X en tal carpeta, pero lo adaptaremos a nuestra estructura”).
+
+7. Multiagente
+Importante: quiero una arquitectura multiagente, no un único agente monolítico.
+
+Diseña:
+Desarrollo/Testing: Usa Qwen3-8B (costo negligible)
+
+Producción Real:
+
+Especialistas: Qwen3-32B
+
+Supervisor: DeepSeek-V3 (BASE flavor, no FAST)
+
+RAG Extractor: Qwen3-8B
+
+Un Supervisor/Coordinator agent que:
+
+Rutee la intención.
+
+Coordine agentes especializados.
+
+Agentes especializados, como mínimo:
+
+CalendarAgent
+
+EmailAgent
+
+SchedulingAgent (puede usar Calendar + Calendly a la vez)
+
+CommsAgent (WhatsApp / notificaciones)
+
+PersonalPreferenceAgent (conocimiento sobre mis reglas y políticas)
+
+Cada agente debe:
+
+Tener herramientas MCP asociadas.
+
+Poder usar RAG cuando necesite contexto histórico.
+
+8. Resultado esperado
+Al final del proceso que te voy a pedir, quiero haber conseguido:
+
+Un proyecto con estructura clara de carpetas, por ejemplo (propón tú la final):
+
+app/
+
+app/agents/
+
+app/rag/
+
+app/mcp/servers/
+
+app/mcp/clients/
+
+app/voice/
+
+app/api/ (Flask)
+
+app/db/
+
+Un MVP funcional donde:
+
+Pueda enviar texto (primera versión) a un endpoint.
+
+El agente:
+
+Rutee la intención.
+
+Use RAG sobre un conjunto de documentos de prueba.
+
+Llame a un MCP simulado.
+
+Devuelva una respuesta coherente.
+
+Una versión extendida donde:
+
+Integramos STT/TTS reales.
+
+Integramos al menos un MCP real (idealmente Google Calendar o Gmail).
+
+Documentación mínima en un README.md:
+
+Setup.
+
+Cómo correr el agente.
+
+Cómo añadir un nuevo MCP server.
+
+Cómo añadir un nuevo agente especializado.
+
+Tu primera respuesta debe:
+
+Confirmar que has entendido el objetivo general.
+
+Proponer un diagrama lógico de arquitectura (en texto).
+
+Proponer una estructura de carpetas inicial para el proyecto, alineada con Flask + LangGraph + RAG + MCP + voz, y tomando en cuenta que partimos del código del Top Pick.

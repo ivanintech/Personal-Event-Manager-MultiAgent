@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Manager - Asistente de Voz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-card: #ffffff;
+            --text: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success: #059669;
+            --error: #dc2626;
+            --warning: #f59e0b;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --chat-bg: #f3f4f6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --bg-secondary: #1f2937;
+                --bg-card: #1f2937;
+                --text: #f9fafb;
+                --text-secondary: #9ca3af;
+                --text-muted: #6b7280;
+                --border: #374151;
+                --accent: #3b82f6;
+                --accent-hover: #2563eb;
+                --success: #10b981;
+                --error: #ef4444;
+                --warning: #fbbf24;
+                --chat-bg: #1f2937;
+            }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875em;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        .chat-panel {
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .chat-header h2 {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .chat-header p {
+            font-size: 0.875em;
+            color: var(--text-secondary);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--chat-bg);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875em;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: var(--accent);
+            color: white;
+        }
+
+        .message.agent .message-avatar {
+            background: var(--success);
+            color: white;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.agent .message-bubble {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.dev .message-bubble {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            font-size: 0.875em;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .message.dev .message-avatar {
+            background: var(--text-muted);
+            color: white;
+            font-size: 0.75em;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            max-width: 70px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-card);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mic-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .mic-button:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .mic-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .mic-button.listening {
+            background: var(--success) !important;
+            animation: pulse 2s infinite;
+        }
+        
+        .mic-button.recording {
+            background: var(--error) !important;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+        }
+
+        .mic-button.recording::before {
+            content: '';
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid var(--error);
+            animation: ripple 1.5s infinite;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.8);
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9375em;
+            font-family: inherit;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .events-panel {
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .events-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .events-header h2 {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .events-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .event-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .event-card h3 {
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .event-card p {
+            font-size: 0.875em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .event-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.75em;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .suggested-event-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .suggested-event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent);
+        }
+
+        .suggested-event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+
+        .suggested-event-header h3 {
+            font-size: 1em;
+            font-weight: 600;
+            flex: 1;
+            margin: 0;
+        }
+
+        .event-badge {
+            background: var(--accent);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7em;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .suggested-event-description {
+            font-size: 0.875em;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .suggested-event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.75em;
+        }
+
+        .meta-item {
+            background: var(--bg-secondary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .suggested-event-button {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.875em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .suggested-event-button:hover {
+            background: var(--accent-hover);
+            transform: scale(1.02);
+        }
+
+        .suggested-event-button:active {
+            transform: scale(0.98);
+        }
+
+        .empty-events {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .events-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Event Manager - Asistente de Voz</h1>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.875em; color: var(--text-secondary);">
+                <input type="checkbox" id="devModeToggle" style="cursor: pointer;" checked>
+                <span>🔧 Modo Desarrollador</span>
+            </label>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Conectando...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h2>Conversación con el Agente</h2>
+                <p>Habla con tu asistente para agendar eventos o consultar información</p>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <!-- Mensajes se añadirán aquí dinámicamente -->
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+
+            <div class="chat-input-area">
+                <button class="mic-button" id="micButton" title="Presiona y mantén para hablar">
+                    🎤
+                </button>
+                <input type="text" class="text-input" id="textInput" placeholder="Escribe tu mensaje o usa el micrófono..." maxlength="500">
+                <button class="send-button" id="sendButton">Enviar</button>
+            </div>
+        </div>
+
+        <div class="events-panel">
+            <div class="events-header">
+                <h2>🎯 Ejemplos para Probar</h2>
+                <p style="font-size: 0.75em; color: var(--text-secondary); margin-top: 4px;">
+                    Click en cualquier ejemplo para probarlo
+                </p>
+            </div>
+            <div class="events-content" id="eventsContent">
+                <div class="empty-events">
+                    <p>Cargando ejemplos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WS_URL = `ws://${window.location.host}/api/v1/voice`;
+        const API_BASE_URL = window.location.origin;
+
+        // Elementos del DOM
+        const messagesContainer = document.getElementById('messagesContainer');
+        const textInput = document.getElementById('textInput');
+        const sendButton = document.getElementById('sendButton');
+        const micButton = document.getElementById('micButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const eventsContent = document.getElementById('eventsContent');
+
+        // Estado
+        let ws = null;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let audioContext = null;
+        let audioQueue = [];
+        let isProcessing = false; // Flag para indicar si el agente está procesando
+
+        // Eventos sugeridos de ejemplo para demostrar el potencial del sistema
+        // Declarado temprano para evitar errores de inicialización
+        const SUGGESTED_EVENTS = [
+            {
+                title: "📅 Listar próximos eventos",
+                description: "Consulta todos los eventos de tu calendario",
+                query: "¿Qué eventos tengo próximamente?",
+                agent: "Calendar Agent",
+                tool: "list_agenda_events",
+                mcp: "google-calendar"
+            },
+            {
+                title: "📧 Buscar emails recientes",
+                description: "Busca emails relacionados con reuniones",
+                query: "Busca emails sobre reuniones de esta semana",
+                agent: "Email Agent",
+                tool: "search_emails",
+                mcp: "imap"
+            },
+            {
+                title: "➕ Crear evento en calendario",
+                description: "Agenda una nueva reunión",
+                query: "Crea un evento llamado 'Reunión de equipo' para mañana a las 10:00 AM",
+                agent: "Calendar Agent",
+                tool: "create_calendar_event",
+                mcp: "google-calendar"
+            },
+            {
+                title: "✅ Confirmar evento propuesto",
+                description: "Confirma un evento que está pendiente",
+                query: "Confirma el evento de la entrevista con Jhon",
+                agent: "Calendar Agent",
+                tool: "confirm_agenda_event",
+                mcp: "google-calendar"
+            },
+            {
+                title: "📨 Enviar email",
+                description: "Envía un correo electrónico",
+                query: "Envía un email a info@example.com con asunto 'Confirmación de reunión'",
+                agent: "Email Agent",
+                tool: "send_email",
+                mcp: "smtp"
+            },
+            {
+                title: "📱 Enviar mensaje WhatsApp",
+                description: "Envía un mensaje por WhatsApp",
+                query: "Envía un mensaje por WhatsApp a +1234567890 diciendo 'Hola, confirmo la reunión'",
+                agent: "WhatsApp Agent",
+                tool: "send_whatsapp",
+                mcp: "whatsapp"
+            },
+            {
+                title: "🔍 Consultar eventos históricos",
+                description: "Busca información sobre eventos pasados usando RAG",
+                query: "¿Qué eventos tuve el mes pasado relacionados con entrevistas?",
+                agent: "General Agent",
+                tool: "RAG retrieval",
+                mcp: "supabase"
+            },
+            {
+                title: "📋 Listar eventos de Calendly",
+                description: "Consulta eventos de tu Calendly",
+                query: "Muéstrame los eventos que tengo en Calendly",
+                agent: "Scheduling Agent",
+                tool: "list_calendly_events",
+                mcp: "calendly"
+            },
+            {
+                title: "⏰ Consultar disponibilidad",
+                description: "Revisa tu disponibilidad para agendar",
+                query: "¿Qué disponibilidad tengo esta semana para agendar una reunión?",
+                agent: "Scheduling Agent",
+                tool: "get_availability",
+                mcp: "calendly"
+            },
+            {
+                title: "📝 Leer email específico",
+                description: "Lee el contenido de un email",
+                query: "Lee el último email que recibí sobre eventos",
+                agent: "Email Agent",
+                tool: "read_email",
+                mcp: "imap"
+            },
+            {
+                title: "🔗 Crear evento desde Calendly",
+                description: "Crea un nuevo evento en Calendly",
+                query: "Crea un evento en Calendly para una consulta de 30 minutos mañana",
+                agent: "Scheduling Agent",
+                tool: "create_calendly_event",
+                mcp: "calendly"
+            },
+            {
+                title: "💾 Buscar en documentos",
+                description: "Busca información en tus documentos usando RAG",
+                query: "Busca información sobre preferencias de reuniones en mis notas",
+                agent: "General Agent",
+                tool: "RAG retrieval",
+                mcp: "supabase"
+            }
+        ];
+        let isPlaying = false;
+        let devModeEnabled = true; // Modo desarrollador activado por defecto
+        let currentSource = null; // Referencia al audio source actual para poder detenerlo en interrupciones
+        
+        // VAD (Voice Activity Detection) - Modo conversación
+        let audioStream = null;
+        let analyser = null;
+        let silenceTimer = null;
+        let lastVoiceTime = null;
+        const SILENCE_THRESHOLD = 0.015; // Umbral de volumen para considerar silencio
+        const SILENCE_DURATION = 2000; // 2 segundos de silencio antes de auto-detener
+        let vadInterval = null;
+        let isAgentSpeaking = false; // Flag para saber si el agente está hablando
+        let continuousListening = false; // Modo siempre escuchando
+        let listeningStream = null; // Stream para escuchar continuamente
+        let currentAgentRequest = null; // Para poder cancelar el procesamiento
+        let isInterrupting = false; // Flag para evitar múltiples interrupciones
+
+        // Inicialización
+        init();
+
+        async function init() {
+            connectWebSocket();
+            setupEventListeners();
+            await loadEvents();
+            setupDevMode();
+            initWebSpeechTTS();
+            
+            // Cargar voces de Web Speech API (puede tardar un poco)
+            if (speechSynthesis) {
+                speechSynthesis.onvoiceschanged = () => {
+                    const voices = speechSynthesis.getVoices();
+                    console.log(`✅ ${voices.length} voces disponibles en Web Speech API`);
+                };
+                // Forzar carga de voces
+                const voices = speechSynthesis.getVoices();
+                if (voices.length === 0) {
+                    // Esperar a que se carguen
+                    setTimeout(() => {
+                        const voices2 = speechSynthesis.getVoices();
+                        console.log(`✅ ${voices2.length} voces cargadas`);
+                    }, 1000);
+                }
+            }
+            
+            // Iniciar modo "siempre escuchando" después de conectar
+            setTimeout(async () => {
+                await startContinuousListening();
+                // Saludo automático después de 1 segundo
+                setTimeout(() => {
+                    sendGreeting();
+                }, 1000);
+            }, 2000);
+        }
+
+        function setupDevMode() {
+            const toggle = document.getElementById('devModeToggle');
+            
+            // Establecer el estado inicial del toggle
+            toggle.checked = devModeEnabled;
+            
+            toggle.addEventListener('change', (e) => {
+                devModeEnabled = e.target.checked;
+                if (devModeEnabled) {
+                    addDevMessage('🔧 Modo desarrollador activado - Verás todo el proceso interno');
+                }
+            });
+        }
+
+        function addDevMessage(text, avatar = 'DEV', agentType = '') {
+            if (!devModeEnabled) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message dev';
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'message-avatar';
+            // Mostrar el tipo de agente en el avatar si está disponible
+            if (agentType) {
+                // Extraer un identificador corto del tipo de agente
+                let shortName = '';
+                if (agentType.includes('Calendar')) shortName = 'CAL';
+                else if (agentType.includes('Email')) shortName = 'EMAIL';
+                else if (agentType.includes('Scheduling')) shortName = 'SCHED';
+                else if (agentType.includes('WhatsApp')) shortName = 'WA';
+                else if (agentType.includes('Orchestrator')) shortName = 'ORCH';
+                else if (agentType.includes('General')) shortName = 'GEN';
+                else shortName = agentType.substring(0, 4).toUpperCase();
+                
+                avatarDiv.textContent = shortName;
+                avatarDiv.title = agentType; // Tooltip con el nombre completo del agente
+            } else {
+                avatarDiv.textContent = avatar;
+            }
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            time.textContent = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            bubble.appendChild(time);
+            messageDiv.appendChild(avatarDiv);
+            messageDiv.appendChild(bubble);
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function formatDevMessage(event, data = {}) {
+            const eventName = event.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            let message = '';
+            
+            switch(event) {
+                case 'agent_rag_started':
+                    message = `🔍 ${data.step || 'RAG Context Retrieval'}\n${data.description || 'Buscando información relevante en la base de datos vectorial'}\n• Consulta: "${data.query_preview || ''}"\n• Buscando en ${data.top_k || 6} fuentes\n• Tecnología: Embeddings semánticos + Supabase pgvector`;
+                    break;
+                    
+                case 'agent_rag_completed':
+                    const sources = data.sources || [];
+                    message = `✅ ${data.step || 'RAG Context Retrieved'}\n${data.description || `Encontrados ${data.chunks_found || 0} fragmentos relevantes`}\n• Fragmentos: ${data.chunks_found || 0}\n• Fuentes: ${sources.join(', ') || 'N/A'}\n• Tecnología: ${data.technology || 'Supabase pgvector + Semantic Search'}\n• Tiempo: ${data.duration_ms || 0}ms`;
+                    if (data.chunk_ids && data.chunk_ids.length > 0) {
+                        message += `\n• IDs encontrados: ${data.chunk_ids.slice(0, 3).join(', ')}${data.chunk_ids.length > 3 ? '...' : ''}`;
+                    }
+                    break;
+                    
+                case 'agent_iteration_started':
+                    message = `🤔 ${data.step || `Iteration ${data.iteration || 1}`}\n${data.description || 'El agente está analizando la consulta y planificando acciones'}\n• Iteración: ${data.iteration || 1}/${data.max_iterations || 5}\n• Contexto disponible: ${data.context_available || 0} mensajes\n• Chunks RAG cargados: ${data.rag_chunks_loaded || 0}`;
+                    break;
+                    
+                case 'agent_llm_calling':
+                    message = `🧠 ${data.step || 'LLM Reasoning'}\n${data.description || 'El agente está consultando al modelo de lenguaje'}\n• Agente: ${data.agent_type || 'General Agent'}\n• Proveedor: ${data.provider || 'Nebius'}\n• Modelo: ${data.model || 'Unknown'}\n• Iteración: ${data.iteration || 1}\n• Contexto: ${data.message_count || 0} mensajes`;
+                    break;
+                    
+                case 'agent_llm_response':
+                    message = `💭 ${data.step || 'LLM Response Received'}\n${data.reasoning || data.description || 'El modelo ha procesado la consulta'}\n• Decisión: ${data.has_tool_calls ? 'Necesita usar herramientas' : 'Respuesta directa'}\n• Tiempo de procesamiento: ${data.duration_ms || 0}ms`;
+                    if (data.content_preview) {
+                        message += `\n• Vista previa: "${data.content_preview.substring(0, 100)}${data.content_preview.length > 100 ? '...' : ''}"`;
+                    }
+                    break;
+                    
+                case 'agent_tools_available':
+                    const availableTools = data.tools || [];
+                    message = `🛠️ ${data.step || 'Available Tools'}\n${data.description || `El agente tiene ${data.tool_count || 0} herramientas disponibles`}\n• Total: ${data.tool_count || 0}`;
+                    if (availableTools.length > 0) {
+                        message += `\n• Herramientas disponibles:\n`;
+                        availableTools.forEach(tool => {
+                            message += `  - ${tool.name}: ${tool.description || 'Sin descripción'}\n`;
+                        });
+                    }
+                    break;
+                case 'agent_llm_reasoning':
+                    const reasoningText = data.reasoning_text || '';
+                    message = `🧠 ${data.step || 'LLM Reasoning'}\n${data.description || 'Razonamiento interno del modelo'}\n• Tiene tool calls: ${data.has_tool_calls ? 'Sí' : 'No'}`;
+                    if (reasoningText && reasoningText.length > 0) {
+                        message += `\n• Razonamiento:\n${reasoningText}`;
+                    }
+                    break;
+                case 'agent_tools_detected':
+                    const toolsList = data.tools || [];
+                    const mcpTools = data.mcp_tools || [];
+                    const toolReasoning = data.tool_selection_reasoning || [];
+                    message = `🔧 ${data.step || 'Tool Selection Decision'}\n${data.description || `El agente ha decidido usar ${data.tool_count || 0} herramienta(s)`}\n• Cantidad: ${data.tool_count || 0}\n• Protocolo: ${data.protocol || 'Local Registry'}\n• Usa MCP: ${data.uses_mcp ? 'Sí' : 'No'}\n• Iteración: ${data.iteration || 1}`;
+                    if (toolsList.length > 0) {
+                        message += `\n• Herramientas seleccionadas: ${toolsList.join(', ')}`;
+                    }
+                    if (toolReasoning.length > 0) {
+                        message += `\n• Razones de selección:\n`;
+                        toolReasoning.forEach(tr => {
+                            message += `  - ${tr.tool}: ${tr.reason}\n`;
+                        });
+                    }
+                    if (mcpTools.length > 0) {
+                        message += `\n• 🔌 MCP Tools: ${mcpTools.join(', ')}`;
+                    }
+                    break;
+                    
+                case 'agent_tool_executing':
+                    const toolName = data.tool_name || 'desconocida';
+                    const argsPreview = data.args_preview || '{}';
+                    message = `⚙️ ${data.step || 'Tool Execution'}\n${data.description || `Ejecutando ${data.tool_type || 'herramienta'}: ${toolName}`}\n• Herramienta: ${toolName}\n• Tipo: ${data.tool_type || 'Local Tool'}\n• Protocolo: ${data.protocol || 'Local Registry'}\n• Iteración: ${data.iteration || 1}`;
+                    if (data.arguments && Object.keys(data.arguments).length > 0) {
+                        const argsStr = Object.entries(data.arguments).map(([k, v]) => `${k}: ${v}`).join(', ');
+                        message += `\n• Parámetros: ${argsStr.substring(0, 150)}${argsStr.length > 150 ? '...' : ''}`;
+                    } else if (argsPreview && argsPreview !== '{}') {
+                        message += `\n• Parámetros: ${argsPreview.substring(0, 150)}${argsPreview.length > 150 ? '...' : ''}`;
+                    }
+                    break;
+                    
+                case 'agent_tool_completed':
+                    const toolName2 = data.tool_name || 'desconocida';
+                    const isMCP = toolName2.includes('.');
+                    message = `${data.success ? '✅' : '❌'} ${data.step || 'Tool Completed'}\n${data.description || `Herramienta completada: ${toolName2}`}\n• Herramienta: ${toolName2}\n• Tipo: ${isMCP ? 'MCP Tool' : 'Local Tool'}\n• Éxito: ${data.success ? 'Sí' : 'No'}\n• Tiempo: ${data.duration_ms || 0}ms`;
+                    if (data.error) {
+                        message += `\n• Error: ${data.error}`;
+                    } else if (data.result_preview) {
+                        message += `\n• Resultado: ${data.result_preview.substring(0, 150)}${data.result_preview.length > 150 ? '...' : ''}`;
+                    }
+                    if (isMCP) {
+                        message += `\n• 🔌 Ejecutado vía MCP (Model Context Protocol)`;
+                    }
+                    break;
+                    
+                case 'agent_final_response':
+                    message = `📝 Respuesta final generada:\n• Iteración: ${data.iteration || 1}`;
+                    if (data.response_preview) {
+                        message += `\n• Vista previa: "${data.response_preview.substring(0, 200)}${data.response_preview.length > 200 ? '...' : ''}"`;
+                    }
+                    break;
+                    
+                case 'agent_cleaning_response':
+                    message = `🧹 Limpiando respuesta...\n• Longitud original: ${data.original_length || 0} caracteres\n• Contiene tags técnicos: ${data.has_think_tags ? 'Sí' : 'No'}`;
+                    break;
+                    
+                case 'agent_response_ready':
+                    const toolsUsed = data.tools_used || [];
+                    message = `✨ ${data.step || 'Response Ready'}\n${data.description || 'Respuesta final lista y humanizada'}\n• Longitud: ${data.final_length || 0} caracteres\n• Citas: ${data.citations_count || 0}\n• Herramientas: ${toolsUsed.length || 0}`;
+                    if (toolsUsed.length > 0) {
+                        message += `\n• Herramientas usadas: ${toolsUsed.join(', ')}`;
+                    }
+                    if (data.multi_agent) {
+                        message += `\n• 🔄 Sistema Multiagente: Múltiples agentes especializados colaboraron`;
+                    }
+                    break;
+                    
+                default:
+                    message = `${eventName}\n${Object.keys(data).length > 0 ? JSON.stringify(data, null, 2) : ''}`;
+            }
+            
+            return message;
+        }
+
+        function connectWebSocket() {
+            // Evitar múltiples conexiones simultáneas
+            if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
+                console.log('WebSocket ya está conectado o conectando, ignorando nueva conexión');
+                return;
+            }
+            
+            try {
+                ws = new WebSocket(WS_URL);
+                
+                ws.onopen = () => {
+                    console.log('WebSocket conectado');
+                    updateStatus(true);
+                };
+
+                ws.onmessage = async (event) => {
+                    // Verificar tipo de mensaje
+                    if (event.data instanceof Blob || event.data instanceof ArrayBuffer) {
+                        // Chunk de audio (PCM16)
+                        await handleAudioChunk(event.data);
+                    } else if (typeof event.data === 'string') {
+                        // Mensaje JSON (logs o completación)
+                        try {
+                            const data = JSON.parse(event.data);
+                            handleWebSocketMessage(data);
+                        } catch (e) {
+                            // Si no es JSON, podría ser texto plano
+                            console.warn('Mensaje no JSON:', event.data);
+                        }
+                    } else {
+                        // Otro tipo de dato
+                        console.warn('Tipo de mensaje desconocido:', typeof event.data);
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    updateStatus(false);
+                };
+
+                ws.onclose = (event) => {
+                    console.log(`WebSocket cerrado (code: ${event.code}, reason: ${event.reason || 'none'})`);
+                    updateStatus(false);
+                    ws = null; // Limpiar referencia
+                    
+                    // Reconectar solo si no fue un cierre intencional (code 1000)
+                    if (event.code !== 1000) {
+                        console.log('Reconectando WebSocket en 3 segundos...');
+                        setTimeout(connectWebSocket, 3000);
+                    }
+                };
+            } catch (error) {
+                console.error('Error conectando WebSocket:', error);
+                updateStatus(false);
+            }
+        }
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusDot.classList.add('connected');
+                statusText.textContent = 'Conectado';
+            } else {
+                statusDot.classList.remove('connected');
+                statusText.textContent = 'Desconectado';
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            // Mostrar TODOS los mensajes en consola con emojis para debugging
+            const event = data.type === 'log' ? data.event : data.type;
+            const emoji = getEventEmoji(event);
+            console.log(`${emoji} [${event}]`, data.data || data);
+            
+            if (data.type === 'log') {
+                const event = data.event;
+                
+                // Mostrar logs como mensajes en la conversación (modo desarrollador)
+                if (devModeEnabled && event.startsWith('agent_')) {
+                    const devText = formatDevMessage(event, data.data || {});
+                    if (devText) {
+                        // Extraer el tipo de agente de los datos si está disponible
+                        const agentType = data.data?.agent_type || '';
+                        addDevMessage(devText, getDevAvatar(event), agentType);
+                    }
+                }
+                
+                switch (event) {
+                    case 'backend_ready':
+                        console.log('✅ Backend listo');
+                        statusDot.classList.add('connected');
+                        statusText.textContent = 'Conectado';
+                        // Enviar mensaje de presentación inicial
+                        sendInitialPresentation();
+                        break;
+                    case 'stt_started':
+                        showTyping(true);
+                        console.log('🎤 STT iniciado - procesando audio del usuario...');
+                        // No mostrar en chat, solo en consola
+                        break;
+                    case 'audio_conversion_started':
+                        if (devModeEnabled) {
+                            addDevMessage(`🔄 Conversión de Audio\n• Formato: ${data.data?.format || 'WebM to WAV'}\n• Tamaño entrada: ${(data.data?.input_size_bytes || 0) / 1024} KB`, 'AUDIO');
+                        }
+                        break;
+                    case 'audio_conversion_completed':
+                        if (devModeEnabled) {
+                            addDevMessage(`✅ Conversión Completada\n• Tamaño salida: ${(data.data?.output_size_bytes || 0) / 1024} KB\n• Ratio compresión: ${data.data?.compression_ratio || 'N/A'}\n• Tiempo: ${data.data?.duration_ms || 0}ms`, 'AUDIO');
+                        }
+                        break;
+                    case 'stt_processing_started':
+                        if (devModeEnabled) {
+                            addDevMessage(`🎤 Procesando Transcripción\n• Proveedor: ${data.data?.provider || 'Groq'}\n• Modelo: ${data.data?.model || 'whisper-large-v3'}\n• Tamaño audio: ${(data.data?.audio_size_bytes || 0) / 1024} KB`, 'STT');
+                        }
+                        break;
+                    case 'stt_completed':
+                        // MOSTRAR INMEDIATAMENTE el texto transcrito para confirmar que fue escuchado
+                        const transcribedText = data.data?.text || '';
+                        const sttDuration = data.data?.duration_ms || 0;
+                        if (transcribedText) {
+                            // Validar rápidamente si tiene sentido
+                            const hasSense = validateMessageQuick(transcribedText);
+                            if (hasSense) {
+                                // Mostrar inmediatamente para que el usuario sepa que fue escuchado
+                                addMessage('user', transcribedText);
+                                console.log(`✅ STT completado: "${transcribedText}" (${sttDuration}ms)`);
+                                if (devModeEnabled) {
+                                    addDevMessage(`✅ Transcripción Completada\n• Texto: "${transcribedText}"\n• Duración: ${sttDuration}ms\n• Caracteres: ${transcribedText.length}`, 'STT');
+                                }
+                            } else {
+                                console.log(`⚠️ Mensaje sin sentido detectado, ignorando: "${transcribedText}"`);
+                                addMessage('system', `⚠️ Mensaje muy corto o sin sentido detectado, ignorando...`);
+                                // Enviar señal al backend para que cancele el procesamiento
+                                if (ws && ws.readyState === WebSocket.OPEN) {
+                                    ws.send(JSON.stringify({
+                                        type: "cancel",
+                                        reason: "message_no_sense",
+                                        text: transcribedText
+                                    })).catch(e => console.warn('⚠️ Error enviando cancelación:', e));
+                                }
+                                resumeContinuousListening();
+                            }
+                        } else {
+                            console.warn('⚠️ STT completado pero sin texto - verificar micrófono y permisos');
+                        }
+                        break;
+                    case 'message_too_short':
+                    case 'message_no_sense':
+                        const ignoredText = data.data?.text || '';
+                        const reason = data.data?.reason || 'Sin sentido';
+                        console.log(`⚠️ Mensaje ignorado: "${ignoredText}" - ${reason}`);
+                        addMessage('system', `⚠️ ${reason}`);
+                        resumeContinuousListening();
+                        break;
+                    case 'request_cancelled':
+                        console.log('✅ Procesamiento cancelado por el backend');
+                        resumeContinuousListening();
+                        break;
+                    case 'agent_processing_started':
+                        showTyping(true);
+                        const queryLength = data.data?.query_length || 0;
+                        console.log(`🤖 Agente procesando (${queryLength} chars)...`);
+                        // No mostrar en chat, solo en consola
+                        break;
+                    case 'agent_response_text':
+                        // SOLO mostrar la respuesta del agente en el chat
+                        const responseText = data.data?.text || '';
+                        if (responseText) {
+                            // Mejorar respuesta para que sea más comprensible
+                            const improvedText = improveResponseText(responseText);
+                            addMessage('agent', improvedText);
+                            console.log(`✅ Agente respondió: "${improvedText.substring(0, 50)}..."`);
+                            
+                            // Guardar el mensaje para usar en fallback TTS si es necesario
+                            window.lastAgentResponseText = improvedText;
+                            
+                            // Si VibeVoice no está funcionando, usar Web Speech API después de un delay
+                            // (esperamos a ver si VibeVoice envía chunks)
+                            setTimeout(() => {
+                                // Si después de 2 segundos no hemos recibido chunks y no estamos usando Web Speech
+                                if (!isPlaying && !useWebSpeechTTS && window.lastAgentResponseText) {
+                                    console.log('⏱️ No se recibió audio de VibeVoice, usando Web Speech API...');
+                                    useWebSpeechTTS = true;
+                                    speakWithWebSpeech(window.lastAgentResponseText);
+                                }
+                            }, 2000);
+                        }
+                        break;
+                    case 'agent_processing_completed':
+                        showTyping(false);
+                        const agentDuration = data.data?.duration_ms || 0;
+                        console.log(`✅ Agente completado (${agentDuration}ms)`);
+                        break;
+                    case 'tts_started':
+                        showTyping(true);
+                        isAgentSpeaking = true;
+                        const textLength = data.data?.text_length || 0;
+                        console.log(`🔊 TTS iniciado (${textLength} chars)`);
+                        // Pausar la grabación mientras el agente habla
+                        pauseContinuousListening();
+                        console.log('⏸️ Agente empezó a hablar - pausando grabación');
+                        
+                        // Si no recibimos chunks en 3 segundos, usar Web Speech API
+                        setTimeout(() => {
+                            if (!isPlaying && isAgentSpeaking) {
+                                const lastMessage = getLastAgentMessage();
+                                if (lastMessage && !useWebSpeechTTS) {
+                                    console.log('⏱️ Timeout esperando audio de VibeVoice, usando Web Speech API...');
+                                    useWebSpeechTTS = true;
+                                    speakWithWebSpeech(lastMessage);
+                                }
+                            }
+                        }, 3000);
+                        // No mostrar en chat, solo en consola
+                        break;
+                    case 'tts_first_chunk_sent':
+                        showTyping(false);
+                        const firstChunkLatency = data.data?.first_chunk_latency_ms || 0;
+                        const chunkSize = data.data?.chunk_size_bytes || 0;
+                        console.log(`✅ Primer chunk de audio recibido (${chunkSize} bytes, ${firstChunkLatency}ms)`);
+                        // Si recibimos chunks, VibeVoice está funcionando
+                        useWebSpeechTTS = false;
+                        // No mostrar en chat, solo en consola
+                        break;
+                    case 'tts_completed':
+                        showTyping(false);
+                        const chunksSent = data.data?.chunks_sent || 0;
+                        const ttsDuration = data.data?.duration_ms || 0;
+                        const fallbackNeeded = data.data?.fallback_needed || false;
+                        const fallbackAvailable = data.data?.fallback_available || false;
+                        console.log(`✅ TTS completado: ${chunksSent} chunks, ${ttsDuration}ms, fallback_needed: ${fallbackNeeded}, fallback_available: ${fallbackAvailable}`);
+                        
+                        // Si no se recibieron chunks O se indica que se necesita fallback, activar Web Speech API
+                        if (chunksSent === 0 || fallbackNeeded || (fallbackAvailable && chunksSent === 0)) {
+                            console.warn('⚠️ TTS completado pero sin chunks o fallback necesario - activando Web Speech API fallback');
+                            const lastAgentMessage = getLastAgentMessage();
+                            if (lastAgentMessage) {
+                                console.log('🔄 VibeVoice no envió audio, usando Web Speech API...');
+                                useWebSpeechTTS = true;
+                                // Asegurarse de que isAgentSpeaking esté en true antes de hablar
+                                isAgentSpeaking = true;
+                                pauseContinuousListening(); // Pausar escucha mientras habla
+                                speakWithWebSpeech(lastAgentMessage);
+                            } else {
+                                // Si no hay mensaje, solo reanudar escucha
+                                console.warn('⚠️ No hay mensaje del agente disponible para TTS fallback');
+                                isAgentSpeaking = false;
+                                resumeContinuousListening();
+                            }
+                        } else {
+                            // Si recibimos chunks, VibeVoice funcionó correctamente
+                            // Esperar a que termine la reproducción (se maneja en playAudioQueue)
+                            // No resetear isAgentSpeaking aquí, se hará cuando termine playAudioQueue
+                        }
+                        break;
+                    case 'tts_error':
+                        showTyping(false);
+                        const ttsError = data.data?.error || 'Error desconocido en TTS';
+                        const useWebSpeech = data.data?.use_web_speech || data.data?.fallback_available || false;
+                        console.error(`❌ Error en TTS: ${ttsError}, use_web_speech: ${useWebSpeech}`);
+                        // Si VibeVoice falla, usar Web Speech API como fallback
+                        const lastAgentMessage = getLastAgentMessage();
+                        if (lastAgentMessage && (useWebSpeech || !useWebSpeechTTS)) {
+                            console.log('🔄 VibeVoice falló, usando Web Speech API como fallback TTS...');
+                            useWebSpeechTTS = true;
+                            isAgentSpeaking = true;  // Asegurar que el flag esté activo
+                            speakWithWebSpeech(lastAgentMessage);
+                        } else {
+                            // Si no hay mensaje disponible, solo reanudar escucha
+                            console.warn('⚠️ No hay mensaje del agente disponible para TTS fallback');
+                            isAgentSpeaking = false;
+                            resumeContinuousListening();
+                        }
+                        break;
+                    case 'agent_response_ready':
+                        // Mostrar la respuesta final humanizada del agente
+                        const finalResponseText = data.data?.text || '';
+                        if (finalResponseText) {
+                            addMessage('agent', finalResponseText);
+                            console.log(`✨ Respuesta final humanizada: "${finalResponseText.substring(0, 50)}..."`);
+                            window.lastAgentResponseText = finalResponseText; // Store for TTS fallback
+                        }
+                        // El TTS se manejará por los eventos tts_started/tts_completed/tts_error
+                        break;
+                    case 'request_completed':
+                        const totalDuration = data.data?.total_duration_ms || 0;
+                        console.log(`✅ Request completado: ${totalDuration}ms total`);
+                        console.log('📊 Métricas:', data.data);
+                        // Asegurar que el micrófono se reactive después de completar la request
+                        // (solo si no está hablando)
+                        if (!isAgentSpeaking) {
+                            setTimeout(() => {
+                                resumeContinuousListening();
+                                console.log('🎤 Micrófono reactivado después de request completado');
+                            }, 500);
+                        }
+                        break;
+                    case 'backend_busy':
+                        console.warn('⚠️ Backend ocupado - esperando...');
+                        // No mostrar en chat, solo en consola
+                        break;
+                    case 'error':
+                    case 'stt_error':
+                    case 'agent_error':
+                    case 'tts_error':
+                        showTyping(false);
+                        const errorMsg = data.data?.error || data.message || 'Error desconocido';
+                        console.error(`❌ Error [${event}]:`, errorMsg);
+                        // Solo mostrar errores críticos en el chat
+                        if (event === 'stt_error') {
+                            addMessage('system', `❌ Error de audio: ${errorMsg}`);
+                        }
+                        break;
+                    // Los logs del agente se muestran como mensajes dev cuando está activo el modo desarrollador
+                    // (ya se procesaron arriba en el bloque general)
+                    
+                    default:
+                        // Mostrar otros eventos en consola
+                        console.log(`📋 Evento desconocido: ${event}`, data.data);
+                }
+            } else if (data.type === 'complete') {
+                console.log('✅ Respuesta completada');
+            }
+        }
+
+        function improveResponseText(text) {
+            // Mejorar respuestas para que sean más comprensibles
+            if (!text) return text;
+            
+            // Limpiar tags HTML si existen
+            text = text.replace(/<[^>]*>/g, '');
+            
+            // Si la respuesta es muy técnica, simplificarla
+            if (text.includes('We note that') || text.includes('The event with id=')) {
+                // Extraer información útil de respuestas técnicas
+                const eventMatch = text.match(/event with id=(\d+)/);
+                const titleMatch = text.match(/title[:\s]+([^\n,]+)/i);
+                const dateMatch = text.match(/(\d{4}-\d{2}-\d{2})/);
+                
+                if (eventMatch || titleMatch || dateMatch) {
+                    let improved = 'Encontré información sobre tus eventos:\n\n';
+                    if (titleMatch) improved += `📅 ${titleMatch[1].trim()}\n`;
+                    if (dateMatch) improved += `📆 Fecha: ${dateMatch[1]}\n`;
+                    return improved;
+                }
+            }
+            
+            // Si la respuesta menciona "extracted_events" o "calendar_events", formatearla mejor
+            if (text.includes('extracted_events') || text.includes('calendar_events')) {
+                // Intentar extraer información estructurada
+                const lines = text.split('\n').filter(l => l.trim());
+                const eventLines = lines.filter(l => 
+                    l.includes('title') || l.includes('start') || l.includes('end') || 
+                    l.match(/\d{4}-\d{2}-\d{2}/)
+                );
+                
+                if (eventLines.length > 0) {
+                    return '📅 Próximos eventos:\n\n' + eventLines.join('\n');
+                }
+            }
+            
+            // Limpiar respuestas que mencionan IDs técnicos
+            text = text.replace(/id=\d+/g, '');
+            text = text.replace(/\(from [^)]+\)/g, '');
+            
+            return text.trim();
+        }
+        
+        function getDevAvatar(event) {
+            if (event.includes('rag')) return 'RAG';
+            if (event.includes('llm') || event.includes('iteration')) return 'LLM';
+            if (event.includes('tool')) return 'TOOL';
+            if (event.includes('cleaning') || event.includes('response_ready')) return 'CLEAN';
+            return 'DEV';
+        }
+
+        function getEventEmoji(event) {
+            const emojiMap = {
+                'backend_ready': '✅',
+                'stt_started': '🎤',
+                'stt_completed': '✅',
+                'agent_processing_started': '🤖',
+                'agent_response_text': '💬',
+                'agent_processing_completed': '✅',
+                'tts_started': '🔊',
+                'tts_first_chunk_sent': '🎵',
+                'tts_completed': '✅',
+                'request_completed': '✅',
+                'backend_busy': '⏳',
+                'stt_error': '❌',
+                'agent_error': '❌',
+                'tts_error': '❌',
+                'complete': '✅'
+            };
+            return emojiMap[event] || '📋';
+        }
+
+        async function handleAudioChunk(chunk) {
+            try {
+                let arrayBuffer;
+                
+                // Manejar diferentes tipos de datos
+                if (chunk instanceof Blob) {
+                    arrayBuffer = await chunk.arrayBuffer();
+                } else if (chunk instanceof ArrayBuffer) {
+                    arrayBuffer = chunk;
+                } else {
+                    console.warn('⚠️ Tipo de chunk desconocido:', typeof chunk);
+                    return;
+                }
+                
+                // Verificar que no esté vacío
+                if (arrayBuffer.byteLength === 0) {
+                    console.warn('⚠️ Chunk de audio vacío recibido');
+                    return;
+                }
+                
+                // Verificar que el tamaño sea múltiplo de 2 (necesario para Int16Array)
+                if (arrayBuffer.byteLength % 2 !== 0) {
+                    console.warn(`⚠️ Chunk de audio con tamaño impar (${arrayBuffer.byteLength} bytes), recortando...`);
+                    // Recortar al tamaño par más cercano
+                    arrayBuffer = arrayBuffer.slice(0, arrayBuffer.byteLength - 1);
+                }
+                
+                // Verificar que después del recorte aún tenga datos
+                if (arrayBuffer.byteLength === 0) {
+                    console.warn('⚠️ Chunk de audio sin datos después del recorte');
+                    return;
+                }
+                
+                const int16Array = new Int16Array(arrayBuffer);
+                
+                // Verificar que tenga datos
+                if (int16Array.length === 0) {
+                    console.warn('Chunk de audio sin datos');
+                    return;
+                }
+                
+                const float32Array = new Float32Array(int16Array.length);
+                
+                // Convertir de PCM16 (-32768 a 32767) a Float32 (-1.0 a 1.0)
+                for (let i = 0; i < int16Array.length; i++) {
+                    float32Array[i] = Math.max(-1, Math.min(1, int16Array[i] / 32768.0));
+                }
+                
+                audioQueue.push(float32Array);
+                
+                // Si recibimos chunks, VibeVoice está funcionando
+                useWebSpeechTTS = false;
+                
+                if (!isPlaying) {
+                    playAudioQueue();
+                }
+            } catch (error) {
+                console.error('Error procesando chunk de audio:', error);
+            }
+        }
+
+        // Fallback TTS usando Web Speech API del navegador
+        let useWebSpeechTTS = false;
+        let speechSynthesis = null;
+        
+        function initWebSpeechTTS() {
+            if ('speechSynthesis' in window) {
+                speechSynthesis = window.speechSynthesis;
+                console.log('✅ Web Speech API disponible para TTS fallback');
+                return true;
+            }
+            console.warn('⚠️ Web Speech API no disponible');
+            return false;
+        }
+        
+        function speakWithWebSpeech(text) {
+            if (!speechSynthesis) {
+                if (!initWebSpeechTTS()) {
+                    console.error('❌ No se puede usar Web Speech API');
+                    return;
+                }
+            }
+            
+            // Cancelar cualquier síntesis anterior
+            speechSynthesis.cancel();
+            
+            // Limpiar texto (remover emojis y caracteres especiales)
+            const cleanText = text
+                .replace(/[^\w\s.,!?;:()\-áéíóúñüÁÉÍÓÚÑÜ]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            if (!cleanText) {
+                console.warn('⚠️ Texto vacío después de limpiar');
+                return;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            
+            // Configurar voz en español si está disponible
+            const voices = speechSynthesis.getVoices();
+            const spanishVoice = voices.find(v => 
+                v.lang.startsWith('es') || v.name.toLowerCase().includes('spanish')
+            );
+            if (spanishVoice) {
+                utterance.voice = spanishVoice;
+                console.log(`🎤 Usando voz: ${spanishVoice.name} (${spanishVoice.lang})`);
+            } else {
+                utterance.lang = 'es-ES';
+            }
+            
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            utterance.onstart = () => {
+                console.log('🔊 Web Speech TTS: Iniciando síntesis');
+                isAgentSpeaking = true;
+                pauseContinuousListening();
+            };
+            
+            utterance.onend = () => {
+                console.log('✅ Web Speech TTS: Síntesis completada');
+                isAgentSpeaking = false;
+                // Asegurar que el micrófono se reactive después de que termine de hablar
+                setTimeout(() => {
+                    resumeContinuousListening();
+                    console.log('🎤 Micrófono reactivado después de Web Speech TTS');
+                }, 500);
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('❌ Web Speech TTS error:', event.error);
+                isAgentSpeaking = false;
+                resumeContinuousListening();
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        async function playAudioQueue() {
+            if (audioQueue.length === 0) {
+                isPlaying = false;
+                isAgentSpeaking = false;
+                // Asegurar que el micrófono se reactive cuando termine la reproducción
+                setTimeout(() => {
+                    resumeContinuousListening();
+                    console.log('🎤 Micrófono reactivado después de reproducir audio de VibeVoice');
+                }, 500);
+                return;
+            }
+
+            isPlaying = true;
+            
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)({ 
+                        sampleRate: 24000 
+                    });
+                }
+
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+
+                const float32Data = audioQueue.shift();
+                if (!float32Data || float32Data.length === 0) {
+                    playAudioQueue();
+                    return;
+                }
+
+                const audioBuffer = audioContext.createBuffer(1, float32Data.length, 24000);
+                audioBuffer.getChannelData(0).set(float32Data);
+                
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+                
+                // Guardar referencia al source actual para poder detenerlo si hay interrupción
+                currentSource = source;
+                
+                source.onended = () => {
+                    currentSource = null;
+                    // Continuar reproduciendo la cola
+                    playAudioQueue();
+                };
+                
+                source.start(0);
+            } catch (error) {
+                console.error('Error reproduciendo audio:', error);
+                isPlaying = false;
+                // Limpiar la cola si hay error
+                audioQueue = [];
+                
+                // Si falla la reproducción de VibeVoice, usar Web Speech API
+                if (!useWebSpeechTTS && window.lastAgentResponseText) {
+                    console.log('🔄 Error reproduciendo audio de VibeVoice, usando Web Speech API...');
+                    useWebSpeechTTS = true;
+                    speakWithWebSpeech(window.lastAgentResponseText);
+                }
+            }
+        }
+
+        function setupEventListeners() {
+            sendButton.addEventListener('click', sendTextMessage);
+            textInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendTextMessage();
+            });
+
+            // Micrófono - Ahora es solo un indicador visual (modo siempre escuchando)
+            micButton.addEventListener('click', () => {
+                if (continuousListening) {
+                    stopContinuousListening();
+                } else {
+                    startContinuousListening();
+                }
+            });
+        }
+        
+        async function startContinuousListening() {
+            if (continuousListening || isAgentSpeaking) return;
+            
+            try {
+                listeningStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+                
+                // Configurar analizador de audio para VAD
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                const source = audioContext.createMediaStreamSource(listeningStream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.8;
+                source.connect(analyser);
+                
+                continuousListening = true;
+                lastVoiceTime = null;
+                micButton.classList.add('listening');
+                micButton.textContent = '👂';
+                micButton.title = 'Escuchando... Habla normalmente';
+                
+                console.log('👂 Modo escucha activo. Habla normalmente, se grabará automáticamente.');
+                console.log('🎤 Micrófono conectado:', listeningStream.getAudioTracks().length > 0);
+                
+                // Iniciar VAD continuo
+                startContinuousVAD();
+                
+            } catch (error) {
+                console.error('❌ Error iniciando escucha continua:', error);
+                console.error('Detalles del error:', error.name, error.message);
+                addMessage('system', '❌ Error: No se pudo acceder al micrófono. Asegúrate de dar permisos.');
+            }
+        }
+        
+        function startContinuousVAD() {
+            if (!analyser || !continuousListening) return;
+            
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            let isCurrentlyRecording = false;
+            let recordingStartTime = null;
+            
+            vadInterval = setInterval(async () => {
+                if (!continuousListening || !analyser) {
+                    if (isCurrentlyRecording) {
+                        await stopCurrentRecording();
+                        isCurrentlyRecording = false;
+                    }
+                    return;
+                }
+                
+                // Si el agente está hablando PERO detectamos voz nueva, interrumpir
+                if (isAgentSpeaking && !isCurrentlyRecording) {
+                    // Continuar monitoreando para detectar interrupciones
+                } else if (isAgentSpeaking && isCurrentlyRecording) {
+                    // Ya estamos grabando una interrupción, continuar
+                } else if (isAgentSpeaking && !isCurrentlyRecording) {
+                    // El agente está hablando pero no estamos grabando - monitorear para interrumpir
+                }
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                // Calcular volumen promedio
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
+                }
+                const average = sum / dataArray.length;
+                const volume = average / 255.0;
+                
+                // Debug del volumen cada 2 segundos (solo cuando está escuchando)
+                if (continuousListening && !isCurrentlyRecording && Math.random() < 0.05) {
+                    // ~5% de probabilidad = aproximadamente cada 2 segundos
+                    console.log(`🔊 Volumen detectado: ${(volume * 100).toFixed(1)}% (umbral: ${(SILENCE_THRESHOLD * 100).toFixed(1)}%)`);
+                }
+                
+                // Actualizar feedback visual
+                if (isCurrentlyRecording) {
+                    updateMicVisualFeedback(volume);
+                    // Debug del volumen mientras graba
+                    if (Math.random() < 0.1) { // ~10% de probabilidad
+                        console.log(`🎤 Grabando - Volumen: ${(volume * 100).toFixed(1)}%`);
+                    }
+                } else if (continuousListening) {
+                    // Feedback sutil cuando está escuchando pero no grabando
+                    const intensity = Math.min(volume * 3, 0.3);
+                    micButton.style.opacity = 0.8 + intensity;
+                }
+                
+                // Detectar voz
+                if (volume > SILENCE_THRESHOLD) {
+                    lastVoiceTime = Date.now();
+                    
+                    // Si no estábamos grabando, empezar
+                    if (!isCurrentlyRecording) {
+                        // Si el agente está hablando, interrumpir primero
+                        if (isAgentSpeaking && !isInterrupting) {
+                            console.log(`🛑 Voz detectada mientras el agente habla - INTERRUMPIENDO...`);
+                            await interruptAgent();
+                        }
+                        
+                        console.log(`🎤 Voz detectada! (volumen: ${(volume * 100).toFixed(1)}%) - Iniciando grabación...`);
+                        isCurrentlyRecording = true;
+                        recordingStartTime = Date.now();
+                        await startAutoRecording();
+                    }
+                    
+                    // Cancelar timer de silencio
+                    if (silenceTimer) {
+                        clearTimeout(silenceTimer);
+                        silenceTimer = null;
+                    }
+                } else {
+                    // Silencio detectado
+                    if (isCurrentlyRecording && lastVoiceTime) {
+                        const silenceDuration = Date.now() - lastVoiceTime;
+                        
+                        if (silenceDuration > 500) { // Esperar 500ms antes de contar
+                            if (!silenceTimer) {
+                                silenceTimer = setTimeout(async () => {
+                                    if (isCurrentlyRecording) {
+                                        const recordingDuration = Date.now() - recordingStartTime;
+                                        console.log(`🔇 Silencio detectado (${recordingDuration}ms de grabación), deteniendo y enviando...`);
+                                        await stopCurrentRecording();
+                                        isCurrentlyRecording = false;
+                                        lastVoiceTime = null;
+                                    }
+                                }, SILENCE_DURATION);
+                            }
+                        }
+                    }
+                }
+            }, 100);
+        }
+        
+        async function startAutoRecording() {
+            if (!listeningStream || !ws || ws.readyState !== WebSocket.OPEN) return;
+            
+            try {
+                mediaRecorder = new MediaRecorder(listeningStream, {
+                    mimeType: 'audio/webm;codecs=opus'
+                });
+                
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    console.log('🛑 MediaRecorder detenido - chunks capturados:', audioChunks.length);
+                    if (audioChunks.length > 0) {
+                        const totalSize = audioChunks.reduce((sum, chunk) => sum + chunk.size, 0);
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        console.log(`📦 Audio preparado: ${audioBlob.size} bytes (${(audioBlob.size / 1024).toFixed(2)} KB)`);
+                        console.log('📤 Enviando audio al servidor...');
+                        await sendAudioMessage(audioBlob);
+                    } else {
+                        console.warn('⚠️ No se capturaron chunks de audio - verificar micrófono');
+                    }
+                    audioChunks = [];
+                };
+                
+                mediaRecorder.start(100); // Chunks de 100ms
+                isRecording = true;
+                micButton.classList.add('recording');
+                micButton.textContent = '🔴';
+                micButton.title = 'Grabando...';
+                
+                console.log('✅ MediaRecorder iniciado - estado:', mediaRecorder.state);
+                console.log('📊 Configuración:', {
+                    mimeType: mediaRecorder.mimeType,
+                    audioTracks: listeningStream.getAudioTracks().length,
+                    trackSettings: listeningStream.getAudioTracks()[0]?.getSettings()
+                });
+                
+            } catch (error) {
+                console.error('❌ Error iniciando grabación automática:', error);
+                console.error('Detalles:', error.name, error.message);
+            }
+        }
+        
+        async function stopCurrentRecording() {
+            if (!isRecording || !mediaRecorder) return;
+            
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            
+            isRecording = false;
+            micButton.classList.remove('recording');
+            micButton.textContent = '👂';
+            micButton.title = 'Escuchando... Habla normalmente';
+            
+            if (silenceTimer) {
+                clearTimeout(silenceTimer);
+                silenceTimer = null;
+            }
+        }
+        
+        function pauseContinuousListening() {
+            if (isRecording) {
+                stopCurrentRecording();
+            }
+            // Pausar VAD visualmente
+            micButton.classList.remove('listening');
+            micButton.textContent = '🔇';
+            micButton.title = 'Agente hablando...';
+        }
+        
+        function resumeContinuousListening() {
+            if (!continuousListening) return;
+            micButton.classList.add('listening');
+            micButton.textContent = '👂';
+            micButton.title = 'Escuchando... Habla normalmente';
+        }
+        
+        async function interruptAgent() {
+            if (isInterrupting) return; // Evitar múltiples interrupciones
+            isInterrupting = true;
+            
+            console.log('🛑 INTERRUPCIÓN: Cancelando TTS y procesamiento...');
+            
+            // 1. Cancelar Web Speech API
+            if (speechSynthesis && speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                console.log('✅ Web Speech API cancelado');
+            }
+            
+            // 2. Detener reproducción de audio de VibeVoice
+            if (currentSource) {
+                try {
+                    currentSource.stop();
+                    currentSource.disconnect();
+                    currentSource = null;
+                    console.log('✅ Audio source de VibeVoice detenido');
+                } catch (e) {
+                    console.warn('⚠️ Error deteniendo audio source:', e);
+                }
+            }
+            
+            // 3. Limpiar cola de audio y detener reproducción
+            audioQueue = [];
+            isPlaying = false;
+            
+            // 4. Resetear flags
+            isAgentSpeaking = false;
+            
+            // 5. Enviar señal de interrupción al backend (si hay conexión)
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                try {
+                    await ws.send(JSON.stringify({
+                        type: "interrupt",
+                        message: "Usuario interrumpió"
+                    }));
+                    console.log('✅ Señal de interrupción enviada al backend');
+                } catch (e) {
+                    console.warn('⚠️ Error enviando interrupción:', e);
+                }
+            }
+            
+            // 6. Reanudar escucha inmediatamente
+            resumeContinuousListening();
+            
+            // Resetear flag después de un breve delay
+            setTimeout(() => {
+                isInterrupting = false;
+            }, 500);
+        }
+        
+        function validateMessageQuick(text) {
+            if (!text || text.trim().length === 0) return false;
+            
+            // Validación rápida: eliminar mensajes muy cortos o sin sentido
+            const trimmed = text.trim();
+            
+            // Muy corto (menos de 2 caracteres)
+            if (trimmed.length < 2) {
+                console.log('⚠️ Mensaje muy corto, ignorando');
+                return false;
+            }
+            
+            // Solo ruido/sonidos (solo caracteres especiales o números)
+            const hasLetters = /[a-zA-ZáéíóúñüÁÉÍÓÚÑÜ]/.test(trimmed);
+            if (!hasLetters && trimmed.length < 5) {
+                console.log('⚠️ Mensaje sin letras, probablemente ruido');
+                return false;
+            }
+            
+            // Palabras comunes de ruido/noise
+            const noiseWords = ['eh', 'ah', 'um', 'uh', 'mm', 'hmm', 'ehh', 'ahh'];
+            const words = trimmed.toLowerCase().split(/\s+/);
+            if (words.length === 1 && noiseWords.includes(words[0])) {
+                console.log('⚠️ Solo palabra de relleno, ignorando');
+                return false;
+            }
+            
+            // Si pasa todas las validaciones, probablemente tiene sentido
+            return true;
+        }
+        
+        function stopContinuousListening() {
+            continuousListening = false;
+            stopVAD();
+            
+            if (isRecording) {
+                stopCurrentRecording();
+            }
+            
+            if (listeningStream) {
+                listeningStream.getTracks().forEach(track => track.stop());
+                listeningStream = null;
+            }
+            
+            micButton.classList.remove('listening', 'recording');
+            micButton.textContent = '🎤';
+            micButton.title = 'Click para activar escucha continua';
+            micButton.style.opacity = '1';
+            micButton.style.transform = 'scale(1)';
+        }
+        
+        function stopVAD() {
+            if (vadInterval) {
+                clearInterval(vadInterval);
+                vadInterval = null;
+            }
+            if (silenceTimer) {
+                clearTimeout(silenceTimer);
+                silenceTimer = null;
+            }
+        }
+        
+        function updateMicVisualFeedback(volume) {
+            if (!isRecording) return;
+            
+            // Cambiar opacidad o tamaño según el volumen
+            const intensity = Math.min(volume * 2, 1); // Amplificar para mejor feedback
+            micButton.style.opacity = 0.8 + (intensity * 0.2);
+            
+            // Cambiar tamaño ligeramente con el volumen
+            const scale = 1 + (intensity * 0.15);
+            micButton.style.transform = `scale(${scale})`;
+        }
+
+        function stopRecording() {
+            if (!isRecording || !mediaRecorder) return;
+            
+            // Detener VAD primero
+            stopVAD();
+            
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            
+            isRecording = false;
+            micButton.classList.remove('recording');
+            micButton.textContent = '🎤';
+            micButton.title = 'Presiona y mantén para hablar';
+            micButton.style.opacity = '1';
+            micButton.style.transform = 'scale(1)';
+            
+            // Limpiar stream si aún existe
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+                audioStream = null;
+            }
+        }
+
+        async function sendAudioMessage(audioBlob) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                console.error('❌ No hay conexión WebSocket');
+                addMessage('system', 'Error: No hay conexión con el servidor');
+                return;
+            }
+
+            try {
+                console.log(`📤 Preparando audio para envío: ${audioBlob.size} bytes, tipo: ${audioBlob.type}`);
+                
+                // Convertir audio WebM a base64
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                
+                console.log(`📦 ArrayBuffer creado: ${arrayBuffer.byteLength} bytes`);
+                
+                // Convertir a base64 de forma más eficiente
+                let binary = '';
+                for (let i = 0; i < uint8Array.length; i++) {
+                    binary += String.fromCharCode(uint8Array[i]);
+                }
+                const base64Audio = btoa(binary);
+                
+                console.log(`✅ Base64 generado: ${base64Audio.length} caracteres`);
+                console.log(`📡 Enviando mensaje WebSocket (tamaño total: ${JSON.stringify({
+                    mode: 'audio',
+                    audio_base64: base64Audio.substring(0, 50) + '...'
+                }).length} chars)`);
+                
+                ws.send(JSON.stringify({
+                    mode: 'audio',
+                    audio_base64: base64Audio
+                }));
+                
+                console.log('✅ Audio enviado al servidor exitosamente');
+            } catch (error) {
+                console.error('❌ Error enviando audio:', error);
+                console.error('Detalles:', error.name, error.message, error.stack);
+                addMessage('system', 'Error al enviar el audio');
+            }
+        }
+
+        function sendTextMessage() {
+            const text = textInput.value.trim();
+            if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            ws.send(JSON.stringify({
+                mode: 'text',
+                text: text
+            }));
+
+            addMessage('user', text);
+            textInput.value = '';
+        }
+
+        function sendInitialPresentation() {
+            // Esperar un momento para asegurar que el WebSocket está completamente listo
+            setTimeout(() => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    const presentationText = `Hola, soy tu asistente de coordinación personal. Puedo ayudarte con:
+
+📅 **Gestión de Calendario**: Consultar, crear y confirmar eventos en Google Calendar
+📧 **Emails**: Buscar, leer y enviar correos electrónicos
+📱 **WhatsApp**: Enviar mensajes y gestionar conversaciones
+📋 **Calendly**: Gestionar eventos y disponibilidad
+🔍 **Búsqueda Inteligente**: Consultar información histórica usando RAG
+💬 **Interacción por Voz**: Habla conmigo y te responderé por voz
+
+Puedes hacer click en los ejemplos del panel derecho para probar diferentes funcionalidades, o simplemente hablarme directamente. ¿En qué puedo ayudarte?`;
+
+                    // Enviar el mensaje de presentación al backend
+                    ws.send(JSON.stringify({
+                        mode: 'text',
+                        text: presentationText
+                    }));
+
+                    console.log('✅ Mensaje de presentación enviado');
+                }
+            }, 1000); // Esperar 1 segundo después de la conexión
+        }
+
+        function sendGreeting() {
+            // Función mantenida por compatibilidad, pero no se usa
+        }
+
+        function addMessage(role, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? 'Tú' : 'AI';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            time.textContent = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            
+            bubble.appendChild(time);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(bubble);
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTyping(show) {
+            if (show) {
+                typingIndicator.classList.add('active');
+            } else {
+                typingIndicator.classList.remove('active');
+            }
+        }
+
+        async function loadEvents() {
+            // Mostrar eventos sugeridos de ejemplo
+            renderSuggestedEvents();
+        }
+
+        function renderSuggestedEvents() {
+            eventsContent.innerHTML = SUGGESTED_EVENTS.map((event, index) => `
+                <div class="suggested-event-card" data-index="${index}">
+                    <div class="suggested-event-header">
+                        <h3>${escapeHtml(event.title)}</h3>
+                        <span class="event-badge">${escapeHtml(event.agent)}</span>
+                    </div>
+                    <p class="suggested-event-description">${escapeHtml(event.description)}</p>
+                    <div class="suggested-event-meta">
+                        <span class="meta-item">🔧 ${escapeHtml(event.tool)}</span>
+                        <span class="meta-item">🔌 ${escapeHtml(event.mcp)}</span>
+                    </div>
+                    <button class="suggested-event-button" onclick="handleSuggestedEventClick(${index})">
+                        Probar esto →
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Hacer la función global para que pueda ser llamada desde onclick
+        window.handleSuggestedEventClick = async function(index) {
+            const event = SUGGESTED_EVENTS[index];
+            if (!event) return;
+
+            console.log(`🎯 Evento sugerido seleccionado: ${event.title}`);
+            console.log(`   Agente: ${event.agent}`);
+            console.log(`   Tool: ${event.tool}`);
+            console.log(`   MCP: ${event.mcp}`);
+            
+            // Interrumpir cualquier proceso en curso (agente hablando o procesando)
+            if (isAgentSpeaking || typingIndicator.style.display !== 'none') {
+                console.log('🛑 Interrumpiendo proceso en curso...');
+                await interruptAgent();
+                // Pequeño delay para asegurar que la interrupción se procese
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            // Limpiar el input
+            textInput.value = event.query;
+
+            // Enviar el mensaje al agente
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                // Añadir mensaje del usuario al chat
+                addMessage('user', event.query);
+                
+                // Enviar al backend
+                ws.send(JSON.stringify({
+                    mode: 'text',
+                    text: event.query
+                }));
+
+                console.log(`✅ Mensaje enviado: ${event.query}`);
+                
+                // Limpiar el input después de enviar
+                textInput.value = '';
+                
+                // Scroll al final del chat
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } else {
+                console.error('⚠️ WebSocket no está conectado');
+                alert('No hay conexión con el servidor. Por favor, espera a que se conecte.');
+            }
+        };
+
+        function renderEvents(events) {
+            // Esta función se mantiene por compatibilidad, pero ahora usamos renderSuggestedEvents
+            if (events && events.length > 0) {
+                eventsContent.innerHTML = events.map(event => `
+                    <div class="event-card">
+                        <h3>${escapeHtml(event.title || 'Evento sin título')}</h3>
+                        <p>${escapeHtml(event.summary || 'Sin descripción')}</p>
+                        <div class="event-meta">
+                            ${event.start_at ? `<span>📅 ${new Date(event.start_at).toLocaleDateString()}</span>` : ''}
+                            ${event.location ? `<span>📍 ${escapeHtml(event.location)}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                renderSuggestedEvents();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function getLastAgentMessage() {
+            // Buscar el último mensaje del agente en el chat
+            const messages = messagesContainer.querySelectorAll('.message.agent .message-bubble');
+            if (messages.length > 0) {
+                return messages[messages.length - 1].textContent.trim();
+            }
+            return window.lastAgentResponseText || null;
+        }
+    </script>
+</body>
+</html>
+

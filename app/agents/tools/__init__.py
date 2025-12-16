@@ -35,11 +35,17 @@ from .base import BaseTool
 from .registry import tool_registry
 from .calendar_tool import calendar_tool
 from .email_tool import email_tool
+from .url_extraction_tool import url_extraction_tool
+from .web_scraping_tool import web_scraping_tool
+from .news_scraping_tool import news_scraping_tool
 
 __all__ = [
     'BaseTool',
     'tool_registry',
     'calendar_tool',
     'email_tool',
+    'url_extraction_tool',
+    'web_scraping_tool',
+    'news_scraping_tool',
 ]
 

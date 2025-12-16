@@ -106,6 +106,10 @@ class AgentDebugInfo(BaseModel):
         ..., 
         description="Total processing time in milliseconds"
     )
+    trace: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="Execution trace (steps: rag, llm responses, tool calls/results)"
+    )
 
 
 class AgentResponse(BaseModel):

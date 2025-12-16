@@ -197,6 +197,97 @@ class Database:
             logger.error(f"Database health check failed: {e}")
             return False
 
+    async def insert_extracted_events(self, events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Insert extracted events into the database.
+        
+        Args:
+            events: List of event dictionaries with keys matching extracted_events table
+            
+        Returns:
+            List of inserted events with their IDs
+        """
+        if not events:
+            return []
+        
+        try:
+            client = self.get_client(admin=True)
+            
+            # Insert events
+            result = client.table('extracted_events').insert(events).execute()
+            
+            inserted_count = len(result.data) if result.data else 0
+            logger.info(f"Inserted {inserted_count} events into extracted_events")
+            return result.data or []
+            
+        except Exception as e:
+            logger.error(f"Failed to insert extracted events: {e}")
+            raise
+
+    async def get_extracted_events(
+        self,
+        status: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        Get extracted events from the database.
+        
+        Args:
+            status: Filter by status (e.g., 'suggested', 'proposed', 'confirmed')
+            limit: Maximum number of events to return
+            offset: Offset for pagination
+            
+        Returns:
+            List of events
+        """
+        try:
+            client = self.get_client(admin=True)
+            
+            query = client.table('extracted_events').select('*')
+            
+            if status:
+                query = query.eq('status', status)
+            
+            query = query.order('created_at', desc=True).limit(limit).offset(offset)
+            
+            result = query.execute()
+            return result.data or []
+            
+        except Exception as e:
+            logger.error(f"Failed to get extracted events: {e}")
+            return []
+
+    async def update_extracted_event(
+        self,
+        event_id: int,
+        updates: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update an extracted event.
+        
+        Args:
+            event_id: ID of the event to update
+            updates: Dictionary with fields to update
+            
+        Returns:
+            Updated event
+        """
+        try:
+            client = self.get_client(admin=True)
+            
+            result = client.table('extracted_events').update(updates).eq('id', event_id).execute()
+            
+            if result.data:
+                logger.info(f"Updated event {event_id}")
+                return result.data[0]
+            else:
+                raise ValueError(f"Event {event_id} not found")
+                
+        except Exception as e:
+            logger.error(f"Failed to update extracted event {event_id}: {e}")
+            raise
+
 
 # Global database instance
 db = Database()

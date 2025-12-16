@@ -1,0 +1,161 @@
+<svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="voiceGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498DB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980B9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="voiceGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2ECC71;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#27AE60;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="voiceGrad3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E74C3C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C0392B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="voiceGrad4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F39C12;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D68910;stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <polygon points="0 0, 10 5, 0 10" fill="#2C3E50" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="700" y="30" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    Flujo Completo de Voz: STT → Agent → TTS
+  </text>
+  
+  <!-- User Speaking -->
+  <rect x="50" y="80" width="250" height="120" rx="10" fill="url(#voiceGrad1)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="175" y="110" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">👤 Usuario Habla</text>
+  <text x="175" y="135" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">VAD detecta voz</text>
+  <text x="175" y="155" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Grabación continua</text>
+  <text x="175" y="175" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">WebM audio stream</text>
+  <text x="175" y="190" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Interrupción si agente habla</text>
+  
+  <!-- Audio Conversion -->
+  <rect x="350" y="80" width="250" height="120" rx="10" fill="url(#voiceGrad2)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="475" y="110" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">🔄 Conversión Audio</text>
+  <text x="475" y="135" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">WebM → WAV</text>
+  <text x="475" y="155" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">ffmpeg (requerido)</text>
+  <text x="475" y="175" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Validación formato</text>
+  <text x="475" y="190" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Preparación para STT</text>
+  
+  <!-- STT -->
+  <rect x="650" y="80" width="250" height="120" rx="10" fill="url(#voiceGrad3)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="775" y="110" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">🎤 STT (Speech-to-Text)</text>
+  <text x="775" y="135" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Whisper (Groq API)</text>
+  <text x="775" y="155" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Transcripción en tiempo real</text>
+  <text x="775" y="175" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Validación rápida</text>
+  <text x="775" y="190" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Feedback inmediato al usuario</text>
+  
+  <!-- Message Validation -->
+  <rect x="950" y="80" width="250" height="120" rx="10" fill="url(#voiceGrad4)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="1075" y="110" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">✅ Validación Mensaje</text>
+  <text x="1075" y="135" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Filtrado rápido</text>
+  <text x="1075" y="155" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Muy cortos / sin sentido</text>
+  <text x="1075" y="175" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Solo palabras de relleno</text>
+  <text x="1075" y="190" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Si válido → procesar</text>
+  
+  <!-- Agent Processing -->
+  <rect x="200" y="250" width="1000" height="200" rx="10" fill="#ECF0F1" stroke="#BDC3C7" stroke-width="3" opacity="0.9"/>
+  <text x="700" y="280" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    🤖 Procesamiento del Agente
+  </text>
+  
+  <!-- RAG -->
+  <rect x="250" y="300" width="180" height="120" rx="5" fill="url(#voiceGrad2)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="340" y="325" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">RAG Retrieval</text>
+  <text x="340" y="345" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Búsqueda semántica</text>
+  <text x="340" y="360" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Supabase pgvector</text>
+  <text x="340" y="375" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Contexto histórico</text>
+  <text x="340" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Top-K chunks</text>
+  <text x="340" y="405" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Citations</text>
+  
+  <!-- LLM Reasoning -->
+  <rect x="480" y="300" width="180" height="120" rx="5" fill="url(#voiceGrad3)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="570" y="325" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">LLM Reasoning</text>
+  <text x="570" y="345" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">DeepSeek-R1</text>
+  <text x="570" y="360" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Function Calling</text>
+  <text x="570" y="375" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Iteraciones ReAct</text>
+  <text x="570" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Razonamiento interno</text>
+  <text x="570" y="405" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Selección de tools</text>
+  
+  <!-- Tool Execution -->
+  <rect x="710" y="300" width="180" height="120" rx="5" fill="url(#voiceGrad4)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="800" y="325" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Tool Execution</text>
+  <text x="800" y="345" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">MCP o Local</text>
+  <text x="800" y="360" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Google Calendar</text>
+  <text x="800" y="375" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Gmail / Calendly</text>
+  <text x="800" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">WhatsApp / etc.</text>
+  <text x="800" y="405" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Resultados</text>
+  
+  <!-- Humanization -->
+  <rect x="940" y="300" width="180" height="120" rx="5" fill="url(#voiceGrad1)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="1030" y="325" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Humanización</text>
+  <text x="1030" y="345" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Limpieza razonamiento</text>
+  <text x="1030" y="360" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Extracción nombres</text>
+  <text x="1030" y="375" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Formato natural</text>
+  <text x="1030" y="390" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Tool results</text>
+  <text x="1030" y="405" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="white">Respuesta final</text>
+  
+  <!-- TTS Primary -->
+  <rect x="200" y="500" width="300" height="150" rx="10" fill="url(#voiceGrad3)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="350" y="530" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">🔊 TTS Primario: VibeVoice</text>
+  <text x="350" y="555" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">WebSocket streaming</text>
+  <text x="350" y="575" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Audio chunks en tiempo real</text>
+  <text x="350" y="595" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Latencia baja</text>
+  <text x="350" y="615" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Múltiples voces</text>
+  <text x="350" y="630" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#FFD700">⚠️ Si falla → Fallback</text>
+  
+  <!-- TTS Fallback -->
+  <rect x="550" y="500" width="300" height="150" rx="10" fill="url(#voiceGrad2)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="700" y="530" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">🔊 TTS Fallback: Web Speech API</text>
+  <text x="700" y="555" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Browser-native</text>
+  <text x="700" y="575" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Sin latencia de red</text>
+  <text x="700" y="595" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Gratuito, siempre disponible</text>
+  <text x="700" y="615" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Activación automática</text>
+  <text x="700" y="630" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#FFD700">✅ Si VibeVoice falla</text>
+  
+  <!-- Audio Playback -->
+  <rect x="900" y="500" width="300" height="150" rx="10" fill="url(#voiceGrad1)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="1050" y="530" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">▶️ Reproducción Audio</text>
+  <text x="1050" y="555" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Cola de audio (queue)</text>
+  <text x="1050" y="575" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Streaming continuo</text>
+  <text x="1050" y="595" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Interrupciones activas</text>
+  <text x="1050" y="615" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Si usuario habla → para</text>
+  <text x="1050" y="630" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#FFD700">🛑 Detiene inmediatamente</text>
+  
+  <!-- Microphone Reactivation -->
+  <rect x="500" y="700" width="400" height="100" rx="10" fill="url(#voiceGrad2)" stroke="#2C3E50" stroke-width="2"/>
+  <text x="700" y="730" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">🎤 Reactivación del Micrófono</text>
+  <text x="700" y="755" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Después de TTS completado</text>
+  <text x="700" y="775" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">O si fue interrumpido</text>
+  <text x="700" y="790" font-family="Arial, sans-serif" font-size="11" text-anchor="middle" fill="white">Modo "siempre escuchando"</text>
+  
+  <!-- Arrows -->
+  <path d="M 300 140 L 350 140" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 600 140 L 650 140" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 900 140 L 950 140" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 1200 140 L 1200 250" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 700 450 L 700 500" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 360 L 480 360" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 690 360 L 710 360" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 920 360 L 940 360" stroke="#2C3E50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500 575 L 550 575" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 850 575 L 900 575" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 1200 575 L 1200 700" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 700 650 L 700 700" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Interruption Arrow (dashed) -->
+  <path d="M 175 200 L 1050 630" stroke="#E74C3C" stroke-width="2" fill="none" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+  <text x="600" y="400" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#E74C3C">🛑 Interrupción</text>
+  
+  <!-- Footer -->
+  <text x="700" y="850" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#7F8C8D">
+    Flujo completo con interrupciones, fallbacks y reactivación automática del micrófono
+  </text>
+</svg>
+
+
